@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/rekluz/Nikakudori-Mahjong/main/graphics/hdnikakudorimahjong.png" width="200" alt="Game Logo">
 </p>
 
-<h1 align="center">Nikakudori Mahjong</h1>
+<h1 align="center">Nikakudori Mahjong Redux</h1>
 
 <p align="center">
   <strong>A modern, fast-paced implementation of the classic Japanese Shisen-Sho puzzle.</strong><br>
