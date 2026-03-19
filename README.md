@@ -1,7 +1,6 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/rekluz/Nikakudori-Mahjong/main/graphics/hdnikakudorimahjong.png" width="200" alt="Game Logo">
+<img width="200" height="200" alt="nikakudorimahjong" src="https://github.com/user-attachments/assets/b097ecf3-07b4-441c-8376-0f86c6ceeec7" />
 </p>
-
 <h1 align="center">Nikakudori Mahjong Redux</h1>
 
 <p align="center">
