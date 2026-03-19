@@ -1,5 +1,5 @@
 <p align="center">
-<img width="200" height="200" alt="nikakudorimahjong" src="https://github.com/user-attachments/assets/b097ecf3-07b4-441c-8376-0f86c6ceeec7" />
+<img width="200" height="200" alt="nikkukorimahjongiconsm" src="https://github.com/user-attachments/assets/09f89720-efe6-44b0-8ac4-e9415dd28836" />
 </p>
 <h1 align="center">Nikakudori Mahjong Redux</h1>
 
