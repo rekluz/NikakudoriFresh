@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/UI-Jetpack_Compose-blue.svg" alt="UI Framework">
 </p>
 
-A reimagined version of my other github project. Nikakudori Mahjong Redux has been rebuilt with a new, MVVM organized structure. This reworked version replaces the old game structure and makes the app run much smoother and includes several new features for a better playing experience.
+A reimagined version of my other github project. Nikakudori Mahjong Redux has been rebuilt using a new, MVVM organized structure. This reworked version replaces the old game structure and makes the app run much smoother and includes several new features for a better playing experience.
 
 About the Project
 
