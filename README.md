@@ -4,7 +4,8 @@
 <h1 align="center">Nikakudori Mahjong Redux</h1>
 
 <p align="center">
-  <strong>A modern, fast-paced implementation of the classic Japanese Shisen-Sho puzzle.</strong><br>
+  <strong>A modern, fast-paced implementation of the classic Japanese Shisen-Sho puzzle. 
+    Nikakudori Mahjong is a highly addictive, relaxing brain-teaser that can be played in short sessions to improve logical thinking.</strong><br>
   Built with Kotlin and Jetpack Compose for a responsive, and fun gameplay experience.
 </p>
 
@@ -24,6 +25,6 @@ Built with Kotlin and Jetpack Compose, it brings a classic puzzle favorite to li
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
  * This code and its assets are the exclusive property of Rekluz Games.
  * Unauthorized copying, distribution, or commercial use is strictly prohibited.
-<p align="center">
-<img width="600" height="400" src="https://github.com/user-attachments/assets/cad64f68-00be-4327-9a62-cc0146252cea" /)
+  <p align="center">
+<img width="350" height="250" alt="gameposter" src="https://github.com/user-attachments/assets/c2286294-2871-4b37-86c3-4a10e1a1ad33" />
 </p>
