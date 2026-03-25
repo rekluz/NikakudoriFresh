@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2026 Rekluz Games. All rights reserved.
-  ~ This code and its assets are the exclusive property of Rekluz Games.
-  ~ Unauthorized copying, distribution, or commercial use is strictly prohibited.
-  -->
-
 <resources>
     <!-- 1. The Splash Screen Theme -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/dark_blue</item>
+        <item name="windowSplashScreenBackground">#0D1A3A</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="postSplashScreenTheme">@style/Theme.NikakudoriFresh</item>
+        <!-- Transitions to the clean theme name below -->
+        <item name="postSplashScreenTheme">@style/Theme.NikakudoriMahjong</item>
     </style>
 
-    <!-- 2. The Main Game Theme -->
-    <!-- Changed parent to a more robust Material3 reference -->
-    <style name="Theme.NikakudoriFresh" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">@color/dark_blue</item>
+    <!-- 2. The Main Game Theme (Renamed for consistency) -->
+    <style name="Theme.NikakudoriMahjong" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">#0D1A3A</item>
         <item name="android:windowNoTitle">true</item>
 
-        <!-- S24 Display Cutout Optimization -->
+        <!-- S24/Display Cutout Optimization -->
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>

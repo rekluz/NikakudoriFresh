@@ -1,54 +1,74 @@
-/*
- * Copyright (c) 2026 Rekluz Games. All rights reserved.
- * This code and its assets are the exclusive property of Rekluz Games.
- * Unauthorized copying, distribution, or commercial use is strictly prohibited.
- */
-
 package com.rekluzgames.nikakudorimahjong.domain.rules
 
 import com.rekluzgames.nikakudorimahjong.domain.model.Tile
 
 object HintFinder {
-    /**
-     * Finds every possible valid match on the current board.
-     * Returns a list of pairs of coordinates.
-     */
+
     fun findAllMatches(board: List<List<Tile>>): List<Pair<Pair<Int, Int>, Pair<Int, Int>>> {
-        val matches = mutableListOf<Pair<Pair<Int, Int>, Pair<Int, Int>>>()
-        if (board.isEmpty()) return matches
+        if (board.isEmpty()) return emptyList()
 
         val rows = board.size
         val cols = board[0].size
 
-        for (r1 in 0 until rows) {
-            for (c1 in 0 until cols) {
-                val t1 = board[r1][c1]
-                if (t1.isRemoved) continue
+        val matches = ArrayList<Pair<Pair<Int, Int>, Pair<Int, Int>>>(32)
 
-                for (r2 in 0 until rows) {
-                    for (c2 in 0 until cols) {
-                        // Skip if it's the same tile or already removed
-                        if ((r1 == r2 && c1 == c2) || board[r2][c2].isRemoved) continue
+        val groups = Array(34) { IntArray(rows * cols) }
+        val counts = IntArray(34)
 
-                        val t2 = board[r2][c2]
-                        // Only calculate path if the tiles are the same type
-                        if (t1.type == t2.type) {
-                            val p1 = r1 to c1
-                            val p2 = r2 to c2
+        // Build groups
+        for (r in 0 until rows) {
+            for (c in 0 until cols) {
+                val tile = board[r][c]
+                if (!tile.isRemoved) {
+                    val type = tile.type
+                    val idx = r * cols + c
+                    groups[type][counts[type]++] = idx
+                }
+            }
+        }
 
-                            // Check if this pair (in either direction) is already in the list
-                            val alreadyFound = matches.any {
-                                (it.first == p1 && it.second == p2) || (it.first == p2 && it.second == p1)
-                            }
+        // 🔥 OPTIMIZATION: build once
+        val intBoard = toIntBoard(board)
 
-                            if (!alreadyFound && PathFinder.canConnect(p1, p2, board)) {
-                                matches.add(p1 to p2)
-                            }
-                        }
+        for (type in 0 until 34) {
+            val count = counts[type]
+            if (count < 2) continue
+
+            val group = groups[type]
+
+            for (i in 0 until count) {
+                val idx1 = group[i]
+                val r1 = idx1 / cols
+                val c1 = idx1 % cols
+
+                for (j in i + 1 until count) {
+                    val idx2 = group[j]
+                    val r2 = idx2 / cols
+                    val c2 = idx2 % cols
+
+                    if (PathFinder.canConnectFast(r1, c1, r2, c2, intBoard, rows, cols)) {
+                        matches.add(Pair(Pair(r1, c1), Pair(r2, c2)))
                     }
                 }
             }
         }
+
         return matches
+    }
+
+    private fun toIntBoard(board: List<List<Tile>>): IntArray {
+        val rows = board.size
+        val cols = board[0].size
+        val arr = IntArray(rows * cols)
+
+        for (r in 0 until rows) {
+            for (c in 0 until cols) {
+                val idx = r * cols + c
+                val tile = board[r][c]
+                arr[idx] = if (tile.isRemoved) -1 else tile.type
+            }
+        }
+
+        return arr
     }
 }

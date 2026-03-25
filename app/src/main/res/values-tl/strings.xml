@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Rekluz Games. All rights reserved.
+  ~ This code and its assets are the exclusive property of Rekluz Games.
+  ~ Unauthorized copying, distribution, or commercial use is strictly prohibited.
+  -->
+
+<resources>
+    <!-- Core Identity -->
+    <string name="app_name">Nikakudori Mahjong</string>
+
+    <!-- Game State / UI -->
+    <string name="win_message">PANALO!</string>
+    <string name="game_paused">NAKA-PAUSE</string>
+    <string name="loading_board">GUMAGAWA NG MALULUTAS NA BOARD...</string>
+    <string name="stalemate_title">WALA NANG GALAW!</string>
+    <string name="stalemate_subtitle">PUMILI NG OPSYON:</string>
+
+    <!-- Buttons -->
+    <string name="btn_play_again">MAGLARO MULI</string>
+    <string name="btn_done">TAPOS</string>
+    <string name="btn_resume">IPAGPATULOY</string>
+    <string name="btn_menu">MENU</string>
+    <string name="btn_hint">PAHIWATIG</string>
+    <string name="btn_boards">MGA BOARD</string>
+    <string name="btn_new_game">BAGONG LARO</string>
+    <string name="btn_retry">ULITIN</string>
+    <string name="btn_about">TUNGKOL</string>
+    <string name="btn_exit">LUMABAS</string>
+    <string name="btn_undo">I-UNDO</string>
+    <string name="btn_cancel">KANSELAHIN</string>
+    <string name="btn_shuffle_format">I-SHUFFLE (%1$d)</string>
+    <string name="btn_language">WIKA</string>
+    <string name="btn_settings">SETTINGS</string>
+    <string name="btn_finish">TAPUSIN</string>
+    <string name="btn_save_score">I-SAVE ANG SCORE</string>
+    <string name="btn_confirm">KUMPIRMAHIN?</string>
+    <string name="btn_clear_format">BURAHIN ANG %1$s</string>
+    <string name="btn_close">ISARA</string>
+
+    <!-- Difficulty -->
+    <string name="diff_easy">MADALI</string>
+    <string name="diff_normal">KATAMTAMAN</string>
+    <string name="diff_hard">MAHIRAP</string>
+    <string name="diff_extreme">NAPAKAHIRAP</string>
+
+    <!-- UI/Overlays -->
+    <string name="remaining_tiles_format">%1$d TILE</string>
+    <string name="title_settings">SETTINGS</string>
+    <string name="setting_mode">MODE</string>
+    <string name="mode_regular">REGULAR</string>
+    <string name="mode_gravity">GRAVITY</string>
+    <string name="setting_sound">TUNOG</string>
+    <string name="setting_vibration">VIBRASYON</string>
+    <string name="status_on">BUKAS</string>
+    <string name="status_off">PATAY</string>
+    <string name="setting_screen">SCREEN</string>
+    <string name="screen_full">FULL</string>
+    <string name="screen_normal">NORMAL</string>
+    <string name="setting_scores">SCORES</string>
+    <string name="status_view">TINGNAN</string>
+
+    <string name="title_select_board">PUMILI NG BOARD</string>
+    <string name="board_size_format">%1$d × %2$d</string>
+
+    <string name="about_github_link">TINGNAN SA GITHUB</string>
+    <string name="about_hello_world">HELLO WORLD!</string>
+    <string name="about_created_by">GINAWA NI</string>
+    <string name="developer_name">Rico Luzi</string>
+    <string name="about_thank_you">SALAMAT SA PAGLALARO</string>
+
+    <string name="final_time_format">HULING ORAS: %1$s</string>
+    <string name="score_enter_name">MAGLAGAY NG 3-LETRA NA PANGALAN</string>
+    <string name="title_hall_of_fame">HALL OF FAME</string>
+    <string name="score_no_scores">WALA PANG SCORE</string>
+
+    <!-- Scoring -->
+    <string name="current_score_label">SCORE: %1$d</string>
+    <string name="time_label">ORAS</string>
+    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
+
+    <!-- About Screen -->
+    <string name="about_developer">GINAWA NI RICO LUZI / REKLUZ GAMES</string>
+    <string name="about_description">Isang klasikong Japanese tile-matching game. Ikonekta ang magkaparehong pares gamit ang hindi hihigit sa dalawang liko upang ma-clear ang board!</string>
+    <string name="version_label">BERSYON %1$s</string>
+
+    <!-- Social / Project -->
+    <string name="copyright_notice">© 2026 REKLUZ GAMES. LAHAT NG KARAPATAN AY NAKALAAN.</string>
+    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+</resources>

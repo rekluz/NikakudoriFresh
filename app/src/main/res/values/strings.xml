@@ -13,6 +13,8 @@
     <string name="win_message">VICTORY!</string>
     <string name="game_paused">PAUSED</string>
     <string name="loading_board">GENERATING SOLVABLE BOARD...</string>
+    <string name="stalemate_title">NO MORE MOVES!</string>
+    <string name="stalemate_subtitle">Choose an option:</string>
 
     <!-- Buttons -->
     <string name="btn_play_again">Play Again</string>
@@ -21,6 +23,56 @@
     <string name="btn_menu">MENU</string>
     <string name="btn_hint">HINT</string>
     <string name="btn_boards">BOARDS</string>
+    <string name="btn_new_game">NEW GAME</string>
+    <string name="btn_retry">RETRY</string>
+    <string name="btn_about">ABOUT</string>
+    <string name="btn_exit">EXIT</string>
+    <string name="btn_undo">UNDO</string>
+    <string name="btn_cancel">CANCEL</string>
+    <string name="btn_shuffle_format">SHUFFLE (%1$d)</string>
+    <string name="btn_language">LANGUAGE</string>
+    <string name="btn_settings">SETTINGS</string>
+    <string name="btn_finish">FINISH</string>
+    <string name="btn_save_score">SAVE SCORE</string>
+    <string name="btn_confirm">CONFIRM?</string>
+    <string name="btn_clear_format">CLEAR %1$s</string>
+    <string name="btn_close">CLOSE</string>
+
+    <!-- Difficulty -->
+    <string name="diff_easy">EASY</string>
+    <string name="diff_normal">NORMAL</string>
+    <string name="diff_hard">HARD</string>
+    <string name="diff_extreme">EXTREME</string>
+
+    <!-- UI/Overlays -->
+    <string name="remaining_tiles_format">%1$d tiles</string>
+    <string name="title_settings">SETTINGS</string>
+    <string name="setting_mode">MODE</string>
+    <string name="mode_regular">REGULAR</string>
+    <string name="mode_gravity">GRAVITY</string>
+    <string name="setting_sound">SOUND</string>
+    <string name="setting_vibration">VIBRATE</string>
+    <string name="status_on">ON</string>
+    <string name="status_off">OFF</string>
+    <string name="setting_screen">SCREEN</string>
+    <string name="screen_full">FULL</string>
+    <string name="screen_normal">NORMAL</string>
+    <string name="setting_scores">SCORES</string>
+    <string name="status_view">VIEW</string>
+
+    <string name="title_select_board">SELECT BOARD</string>
+    <string name="board_size_format">%1$d × %2$d</string>
+
+    <string name="about_github_link">View project on GitHub</string>
+    <string name="about_hello_world">Hello World!</string>
+    <string name="about_created_by">Created by</string>
+    <string name="developer_name">Rico Luzi</string>
+    <string name="about_thank_you">THANK YOU FOR PLAYING</string>
+
+    <string name="final_time_format">Final Time: %1$s</string>
+    <string name="score_enter_name">ENTER 3-LETTER NAME</string>
+    <string name="title_hall_of_fame">HALL OF FAME</string>
+    <string name="score_no_scores">No scores yet</string>
 
     <!-- Scoring -->
     <string name="current_score_label">Score: %1$d</string>

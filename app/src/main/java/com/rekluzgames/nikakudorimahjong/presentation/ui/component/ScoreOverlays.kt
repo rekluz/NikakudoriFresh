@@ -4,24 +4,19 @@
 
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -30,105 +25,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rekluzgames.nikakudorimahjong.domain.model.Difficulty
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
-import com.rekluzgames.nikakudorimahjong.domain.model.Medal
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
+import androidx.compose.ui.res.stringResource
+import com.rekluzgames.nikakudorimahjong.R
 
 @Composable
 fun ScoreEntryOverlay(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
-    }
+    val timeFormatted by viewModel.timeFormatted.collectAsState()
 
     OverlayContainer {
-        Column(
-            Modifier
-                .width(450.dp)
-                .background(Color(0xFF0D1A3A), RoundedCornerShape(24.dp))
-                .border(1.dp, Color(0xFF00BFFF).copy(alpha = 0.15f), RoundedCornerShape(24.dp))
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("VICTORY!", color = Color.Yellow, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-            Text("Final Time: ${uiState.timeFormatted}", color = Color.White)
+        OverlayCard {
+            Text(stringResource(R.string.win_message), color = Color.Yellow, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.final_time_format, timeFormatted), color = Color.White)
 
             val medals = uiState.earnedMedals
             if (medals.isNotEmpty()) {
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    medals.forEach { medal ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(medal.icon, fontSize = 22.sp)
-                            Text(
-                                medal.label,
-                                color = Color(0xFFFFD700),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                    medals.forEach { Text(it.icon, fontSize = 24.sp, modifier = Modifier.padding(horizontal = 4.dp)) }
                 }
-                // Medal descriptions so the player knows what they earned
-                Text(
-                    medals.joinToString(" · ") { it.description },
-                    color = Color.Gray,
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
 
-            Spacer(Modifier.height(24.dp))
-            Text("ENTER YOUR 3-DIGIT NAME", color = Color.Gray, fontSize = 12.sp)
+            Spacer(Modifier.height(16.dp))
+            Text(stringResource(R.string.score_enter_name), color = Color.Gray, fontSize = 12.sp)
 
             OutlinedTextField(
                 value = uiState.playerName,
                 onValueChange = { viewModel.updatePlayerName(it) },
-                textStyle = TextStyle(
-                    color = Color.White,
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier
-                    .width(200.dp)
-                    .padding(vertical = 16.dp)
-                    .focusRequester(focusRequester),
+                textStyle = TextStyle(color = Color.White, fontSize = 32.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold),
+                modifier = Modifier.width(180.dp).padding(vertical = 12.dp),
                 maxLines = 1,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                    viewModel.saveScoreAndShowBoard()
-                }),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFF00BFFF),
-                    focusedBorderColor = Color.Yellow,
-                    cursorColor = Color.Yellow
-                )
+                keyboardActions = KeyboardActions(onDone = { viewModel.saveScoreAndShowBoard() }),
+                colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFF00BFFF), focusedBorderColor = Color.Yellow)
             )
 
-            // Character counter
-            Text(
-                "${uiState.playerName.length}/3",
-                color = Color.Gray,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            MenuPillButton("SAVE SCORE", color = Color(0xFF00BFFF)) {
-                keyboardController?.hide()
-                focusManager.clearFocus()
-                viewModel.saveScoreAndShowBoard()
-            }
+            MenuPillButton(stringResource(R.string.btn_save_score), color = Color(0xFF00BFFF)) { viewModel.saveScoreAndShowBoard() }
         }
     }
 }
@@ -136,190 +68,90 @@ fun ScoreEntryOverlay(viewModel: GameViewModel) {
 @Composable
 fun ScoreboardOverlay(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-    val tabs = Difficulty.entries.map { it.label }
     val activeTab = uiState.selectedScoreTab
-    val scores = (uiState.highScores[activeTab] ?: emptyList()).take(3)
-    val lastSaved = uiState.lastSavedScore
+    var isConfirmingClear by remember { mutableStateOf(false) }
 
-    var showClearConfirm by remember { mutableStateOf(false) }
-    LaunchedEffect(activeTab) { showClearConfirm = false }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "flash")
-    val flashAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.15f,
-        targetValue = 0.55f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "flashAlpha"
-    )
+    LaunchedEffect(activeTab) { isConfirmingClear = false }
 
     OverlayContainer {
-        Column(
-            modifier = Modifier
-                .width(450.dp)
-                .background(Color(0xFF0D1A3A), RoundedCornerShape(24.dp))
-                .border(1.dp, Color(0xFF00BFFF).copy(alpha = 0.15f), RoundedCornerShape(24.dp))
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "HALL OF FAME",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
+        // Added a fixed height constraint to the OverlayCard to ensure it stays within screen bounds
+        OverlayCard(modifier = Modifier.fillMaxHeight(0.85f).widthIn(max = 450.dp)) {
+            OverlayTitle(stringResource(R.string.title_hall_of_fame))
 
-            // Difficulty tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF060E1E)),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                tabs.forEach { tab ->
-                    val isActive = tab == activeTab
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                if (isActive) Color(0xFF00BFFF).copy(alpha = 0.85f)
-                                else Color.Transparent
-                            )
-                            .clickable { viewModel.selectScoreTab(tab) }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = tab,
-                            color = if (isActive) Color.Black else Color.Gray,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                }
-            }
-
-            // Score rows
-            if (scores.isEmpty()) {
-                Text(
-                    "No scores yet.\nFinish a $activeTab game to appear here!",
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    scores.forEachIndexed { index, score ->
-                        val isNewScore = lastSaved != null &&
-                                score.name == lastSaved.name &&
-                                score.time == lastSaved.time
-
-                        val rankColor = when (index) {
-                            0 -> Color(0xFFFFD700)
-                            1 -> Color(0xFFC0C0C0)
-                            2 -> Color(0xFFCD7F32)
-                            else -> Color.Gray
-                        }
-                        val rowBackground = if (isNewScore) {
-                            Color(0xFF00BFFF).copy(alpha = flashAlpha)
-                        } else {
-                            Color.White.copy(alpha = 0.05f)
-                        }
-
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .background(rowBackground, RoundedCornerShape(8.dp))
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "#${index + 1}",
-                                color = if (isNewScore) Color.White else rankColor,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 12.sp,
-                                modifier = Modifier.width(28.dp)
-                            )
-                            Text(
-                                score.name,
-                                color = if (isNewScore) Color.White else Color.Yellow,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.width(44.dp)
-                            )
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.Start
-                            ) {
-                                score.medals.forEach { medal ->
-                                    Text(
-                                        text = medal.icon,
-                                        fontSize = 12.sp,
-                                        modifier = Modifier.padding(end = 2.dp)
-                                    )
-                                }
-                            }
-                            Text(
-                                score.timeFormatted,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Medal legend
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Medal.entries.forEach { medal ->
+            // Tab Header
+            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Difficulty.entries.forEach { diff ->
+                    val isSelected = activeTab == diff.label
                     Text(
-                        "${medal.icon} ${medal.label}",
-                        color = Color.Gray,
-                        fontSize = 8.sp,
-                        modifier = Modifier.padding(horizontal = 3.dp)
+                        text = stringResource(diff.titleRes),
+                        color = if (isSelected) Color(0xFF00BFFF) else Color.Gray,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { viewModel.selectScoreTab(diff.label) }.padding(4.dp)
                     )
                 }
             }
 
-            // Bottom buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            val scores = uiState.highScores[activeTab] ?: emptyList()
+
+            // --- SCROLLABLE SECTION ---
+            // .weight(1f) ensures this section expands to fill available space,
+            // while .verticalScroll keeps it from pushing the footer off-screen.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    if (showClearConfirm) {
-                        MenuPillButton("CONFIRM CLEAR", color = Color(0xFFFF4444)) {
-                            viewModel.clearScores(activeTab)
-                            showClearConfirm = false
+                if (scores.isEmpty()) {
+                    Text(stringResource(R.string.score_no_scores), color = Color.Gray, fontSize = 14.sp, modifier = Modifier.fillMaxWidth().padding(top = 40.dp), textAlign = TextAlign.Center)
+                } else {
+                    scores.forEachIndexed { index, score ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("#${index + 1}", color = Color.Gray, fontWeight = FontWeight.Bold, modifier = Modifier.width(32.dp))
+                            Text(score.name, color = Color.Yellow, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
+                            Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+                                score.medals.forEach { Text(it.icon, fontSize = 14.sp, modifier = Modifier.padding(start = 2.dp)) }
+                            }
+                            Text(score.timeFormatted, color = Color.White, fontWeight = FontWeight.Bold)
                         }
-                    } else {
-                        MenuPillButton(
-                            text = "CLEAR $activeTab",
-                            color = Color(0xFF663333),
-                            enabled = scores.isNotEmpty()
-                        ) { showClearConfirm = true }
                     }
                 }
+            }
+
+            // --- FIXED FOOTER ---
+            // This stays at the bottom of the OverlayCard regardless of score count.
+            Spacer(Modifier.height(16.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Box(modifier = Modifier.weight(1f)) {
-                    MenuPillButton("CLOSE") {
-                        showClearConfirm = false
-                        viewModel.clearLastSavedScore()
-                        viewModel.changeState(GameState.PLAYING)
+                    if (isConfirmingClear) {
+                        MenuPillButton(stringResource(R.string.btn_confirm), color = Color(0xFFFF4444)) {
+                            viewModel.clearScores(activeTab)
+                            isConfirmingClear = false
+                        }
+                    } else {
+                        val currentDiff = Difficulty.entries.firstOrNull { it.label == activeTab }
+                        val diffTitle = currentDiff?.let { stringResource(it.titleRes) } ?: activeTab
+                        MenuPillButton(
+                            text = stringResource(R.string.btn_clear_format, diffTitle),
+                            color = Color(0xFF442222),
+                            enabled = scores.isNotEmpty()
+                        ) {
+                            isConfirmingClear = true
+                        }
                     }
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    MenuPillButton(stringResource(R.string.btn_close)) { viewModel.goBack() }
                 }
             }
         }

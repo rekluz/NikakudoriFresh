@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
- * This code and its assets are the exclusive property of Rekluz Games.
- * Unauthorized copying, distribution, or commercial use is strictly prohibited.
  */
 
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
@@ -23,13 +21,14 @@ import androidx.compose.ui.unit.sp
 import com.rekluzgames.nikakudorimahjong.domain.model.Difficulty
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
+import androidx.compose.ui.res.stringResource
+import com.rekluzgames.nikakudorimahjong.R
 
 @Composable
 fun BoardsOverlay(viewModel: GameViewModel) {
     OverlayContainer {
         OverlayCard {
-            OverlayTitle("SELECT BOARD")
-
+            OverlayTitle(stringResource(R.string.title_select_board))
             val chunks = Difficulty.entries.chunked(2)
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 chunks.forEach { rowItems ->
@@ -42,10 +41,9 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
             Box(modifier = Modifier.width(140.dp)) {
-                MenuPillButton("CANCEL", color = Color.Gray) {
+                MenuPillButton(stringResource(R.string.btn_cancel), color = Color.Gray) {
                     viewModel.changeState(GameState.PLAYING)
                 }
             }
@@ -55,12 +53,11 @@ fun BoardsOverlay(viewModel: GameViewModel) {
 
 @Composable
 fun BoardRectButton(difficulty: Difficulty, modifier: Modifier, onClick: () -> Unit) {
-    // Each difficulty gets a distinct colour to aid recognition
     val buttonColor = when (difficulty) {
-        Difficulty.EASY    -> Color(0xFF1A5C2A) // Green — approachable
-        Difficulty.NORMAL  -> Color(0xFF1A3A5C) // Blue — standard
-        Difficulty.HARD    -> Color(0xFF5C3A1A) // Amber — challenging
-        Difficulty.EXTREME -> Color(0xFF5C1A1A) // Red — expert
+        Difficulty.EASY    -> Color(0xFF1A5C2A)
+        Difficulty.NORMAL  -> Color(0xFF1A3A5C)
+        Difficulty.HARD    -> Color(0xFF5C3A1A)
+        Difficulty.EXTREME -> Color(0xFF5C1A1A)
     }
     val accentColor = when (difficulty) {
         Difficulty.EASY    -> Color(0xFF44BB66)
@@ -68,13 +65,6 @@ fun BoardRectButton(difficulty: Difficulty, modifier: Modifier, onClick: () -> U
         Difficulty.HARD    -> Color(0xFFFFB300)
         Difficulty.EXTREME -> Color(0xFFFF4444)
     }
-    val descriptors = when (difficulty) {
-        Difficulty.EASY    -> "Beginner"
-        Difficulty.NORMAL  -> "Standard"
-        Difficulty.HARD    -> "Challenging"
-        Difficulty.EXTREME -> "Expert"
-    }
-
     Box(
         modifier = modifier
             .height(80.dp)
@@ -86,19 +76,13 @@ fun BoardRectButton(difficulty: Difficulty, modifier: Modifier, onClick: () -> U
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = difficulty.label,
+                text = stringResource(difficulty.titleRes),
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = descriptors,
-                color = accentColor,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = "${difficulty.rows} × ${difficulty.cols}",
+                text = stringResource(R.string.board_size_format, difficulty.rows, difficulty.cols),
                 color = Color.White.copy(alpha = 0.5f),
                 fontSize = 10.sp
             )

@@ -17,9 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rekluzgames.nikakudorimahjong.R
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 
@@ -27,7 +29,6 @@ import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 fun OverlayContainer(content: @Composable () -> Unit) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -37,24 +38,30 @@ fun OverlayContainer(content: @Composable () -> Unit) {
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(tween(200)) + scaleIn(tween(220), initialScale = 0.92f),
-            exit  = fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.92f)
-        ) {
-            content()
-        }
+            exit = fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.92f)
+        ) { content() }
     }
 }
 
 @Composable
-fun OverlayCard(content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = Modifier
-            .width(450.dp)
+fun OverlayCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Box(
+        modifier = modifier
+            .widthIn(max = 450.dp)
+            .fillMaxWidth(0.9f)
             .background(Color(0xFF0D1A3A), RoundedCornerShape(24.dp))
             .border(1.dp, Color(0xFF00BFFF).copy(alpha = 0.15f), RoundedCornerShape(24.dp))
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        content = content
-    )
+            .padding(32.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize(),
+            content = content
+        )
+    }
 }
 
 @Composable
@@ -69,7 +76,7 @@ fun OverlayTitle(text: String) {
 }
 
 @Composable
-fun LargeMenuButton(text: String, modifier: Modifier, onClick: () -> Unit) {
+fun LargeMenuButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .height(80.dp)
@@ -87,32 +94,35 @@ fun LargeMenuButton(text: String, modifier: Modifier, onClick: () -> Unit) {
 fun PauseOverlay(viewModel: GameViewModel, onExit: () -> Unit) {
     OverlayContainer {
         OverlayCard {
-            OverlayTitle("MENU")
-
+            OverlayTitle(stringResource(R.string.btn_menu))
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    LargeMenuButton("NEW GAME", Modifier.weight(1f)) {
-                        viewModel.changeState(GameState.BOARDS)
-                    }
-                    // RETRY restores the exact original board layout
-                    LargeMenuButton("RETRY", Modifier.weight(1f)) {
-                        viewModel.retryGame()
-                    }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_new_game),
+                        Modifier.weight(1f)
+                    ) { viewModel.changeState(GameState.BOARDS) }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_retry),
+                        Modifier.weight(1f)
+                    ) { viewModel.retryGame() }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    LargeMenuButton("RESUME", Modifier.weight(1f)) {
-                        viewModel.changeState(GameState.PLAYING)
-                    }
-                    LargeMenuButton("ABOUT", Modifier.weight(1f)) {
-                        viewModel.changeState(GameState.ABOUT)
-                    }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_resume),
+                        Modifier.weight(1f)
+                    ) { viewModel.changeState(GameState.PLAYING) }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_about),
+                        Modifier.weight(1f)
+                    ) { viewModel.changeState(GameState.ABOUT) }
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
             Box(modifier = Modifier.width(140.dp)) {
-                MenuPillButton("EXIT", color = Color(0xFFFF4444)) { onExit() }
+                MenuPillButton(
+                    stringResource(R.string.btn_exit),
+                    color = Color(0xFFFF4444)
+                ) { onExit() }
             }
         }
     }
@@ -121,52 +131,105 @@ fun PauseOverlay(viewModel: GameViewModel, onExit: () -> Unit) {
 @Composable
 fun StalemateOverlay(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-
     OverlayContainer {
         OverlayCard {
             Text(
-                "NO MORE MOVES!",
+                stringResource(R.string.stalemate_title),
                 color = Color(0xFFFF4444),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                "Stalemate reached. Choose an option:",
+                stringResource(R.string.stalemate_subtitle),
                 color = Color.Gray,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
             )
-
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     LargeMenuButton(
-                        text = "SHUFFLE (${uiState.shufflesRemaining})",
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (uiState.shufflesRemaining > 0) viewModel.shuffle()
-                    }
-                    // RETRY restores the exact original board layout
-                    LargeMenuButton("RETRY", Modifier.weight(1f)) {
-                        viewModel.retryGame()
-                    }
+                        stringResource(R.string.btn_shuffle_format, uiState.shufflesRemaining),
+                        Modifier.weight(1f)
+                    ) { if (uiState.shufflesRemaining > 0) viewModel.shuffle() }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_retry),
+                        Modifier.weight(1f)
+                    ) { viewModel.retryGame() }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    LargeMenuButton("NEW GAME", Modifier.weight(1f)) {
-                        viewModel.changeState(GameState.BOARDS)
+                    LargeMenuButton(
+                        stringResource(R.string.btn_new_game),
+                        Modifier.weight(1f)
+                    ) { viewModel.changeState(GameState.BOARDS) }
+                    LargeMenuButton(
+                        stringResource(R.string.btn_undo),
+                        Modifier.weight(1f)
+                    ) { viewModel.undo(); viewModel.changeState(GameState.PLAYING) }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Box(modifier = Modifier.width(140.dp)) {
+                MenuPillButton(
+                    stringResource(R.string.btn_cancel),
+                    color = Color.Gray
+                ) { viewModel.changeState(GameState.PLAYING) }
+            }
+        }
+    }
+}
+
+@Composable
+fun LanguageOverlay(onSelect: (String) -> Unit, onClose: () -> Unit) {
+    OverlayContainer {
+        OverlayCard {
+            OverlayTitle(stringResource(R.string.btn_language))
+
+            // 2x2x2 grid — six languages in three rows of two
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("English", color = Color(0xFF2A2A2A)) { onSelect("en") }
                     }
-                    LargeMenuButton("UNDO", Modifier.weight(1f)) {
-                        viewModel.undo()
-                        viewModel.changeState(GameState.PLAYING)
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("日本語", color = Color(0xFF2A2A2A)) { onSelect("ja") }
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("Italiano", color = Color(0xFF2A2A2A)) { onSelect("it") }
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("Français", color = Color(0xFF2A2A2A)) { onSelect("fr") }
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("Filipino", color = Color(0xFF2A2A2A)) { onSelect("tl") }
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        MenuPillButton("Español", color = Color(0xFF2A2A2A)) { onSelect("es") }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
             Box(modifier = Modifier.width(140.dp)) {
-                MenuPillButton("CANCEL", color = Color.Gray) {
-                    viewModel.changeState(GameState.PLAYING)
-                }
+                MenuPillButton(
+                    stringResource(R.string.btn_close),
+                    color = Color(0xFFFF4444)
+                ) { onClose() }
             }
         }
     }

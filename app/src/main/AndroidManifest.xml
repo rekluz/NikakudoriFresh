@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2026 Rekluz Games. All rights reserved.
-  ~ This code and its assets are the exclusive property of Rekluz Games.
-  ~ Unauthorized copying, distribution, or commercial use is strictly prohibited.
   -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
+        android:name=".NikakudoriApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -16,14 +16,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
-        android:theme="@style/Theme.NikakudoriFresh"> <!-- UPDATED NAME -->
+        android:theme="@style/Theme.App.Starting">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:theme="@style/Theme.NikakudoriFresh"> <!-- UPDATED NAME -->
+            android:theme="@style/Theme.App.Starting">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -41,6 +42,29 @@ fun TileView(
 ) {
     val context = LocalContext.current
 
+    // -------------------------------------------------------------------------
+    // 3D DEPTH ADJUSTMENT (TWEAK THESE VALUES)
+    // -------------------------------------------------------------------------
+    // These values "shrink" the glow specifically from the bottom and right
+    // to avoid highlighting the 3D "sides" of your tile assets.
+    val depthRight = 4.5.dp
+    val depthBottom = 4.dp
+
+    // Thickness of the glow line (visible thickness is half this due to parent clip)
+    val borderThickness = 2.dp
+
+    // Smooth gravity movement
+    val animatedX by animateFloatAsState(
+        targetValue = xOffset,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
+        label = "slideX"
+    )
+    val animatedY by animateFloatAsState(
+        targetValue = yOffset,
+        animationSpec = spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMediumLow),
+        label = "slideY"
+    )
+
     // Pulsing glow for hint
     val infiniteTransition = rememberInfiniteTransition(label = "glow")
     val glowAlpha by infiniteTransition.animateFloat(
@@ -48,11 +72,11 @@ fun TileView(
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(800),
-            repeatMode = RepeatMode.Reverse
+            repeatMode = RepeatMode.Reverse // Fixed: Corrected reference and added RepeatMode
         ), label = "alpha"
     )
 
-    // Shake + vanish animation
+    // Match animation state
     val shakeX = remember { Animatable(0f) }
     val vanishAlpha = remember { Animatable(1f) }
 
@@ -61,25 +85,15 @@ fun TileView(
             coroutineScope {
                 launch {
                     val shakeDistance = width * 0.12f
-                    val shakeDuration = 55
                     repeat(4) {
-                        shakeX.animateTo(
-                            targetValue = shakeDistance,
-                            animationSpec = tween(shakeDuration, easing = LinearEasing)
-                        )
-                        shakeX.animateTo(
-                            targetValue = -shakeDistance,
-                            animationSpec = tween(shakeDuration, easing = LinearEasing)
-                        )
+                        shakeX.animateTo(shakeDistance, tween(55, easing = LinearEasing))
+                        shakeX.animateTo(-shakeDistance, tween(55, easing = LinearEasing))
                     }
                     shakeX.animateTo(0f, animationSpec = tween(40))
                 }
                 launch {
                     kotlinx.coroutines.delay(180L)
-                    vanishAlpha.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(150, easing = FastOutLinearInEasing)
-                    )
+                    vanishAlpha.animateTo(0f, tween(150, easing = FastOutLinearInEasing))
                 }
             }
         } else {
@@ -93,10 +107,14 @@ fun TileView(
         enter = fadeIn(),
         exit = fadeOut(tween(250)) + scaleOut(tween(250), targetScale = 0.85f)
     ) {
+        // Main Box defining the tile footprint. Layout remains untouched.
         Box(
             modifier = Modifier
                 .size(width.dp, height.dp)
-                .offset(xOffset.dp, yOffset.dp)
+                .offset(animatedX.dp, animatedY.dp)
+                // CLIP: Essential. It chops off the 1dp bleed on the top/left
+                // so the glow looks flush without overlapping neighbors.
+                .clip(RectangleShape)
                 .graphicsLayer {
                     if (isExploding) {
                         translationX = shakeX.value
@@ -119,23 +137,27 @@ fun TileView(
                 )
             }
 
-            // SELECTION: Blue tint
+            // SELECTION OVERLAY
             if (isSelected) {
                 Box(
                     Modifier
                         .fillMaxSize()
+                        // ASYMMETRIC PADDING: Pulls the glow in from the 3D sides,
+                        // but stays locked at 0.dp on the Top and Left.
+                        .padding(start = 0.dp, top = 0.dp, end = depthRight, bottom = depthBottom)
+                        .border(borderThickness, Color.Cyan, RectangleShape)
                         .background(Color(0xFF00BFFF).copy(alpha = 0.4f))
-                        .border(2.dp, Color.Cyan, RectangleShape)
                 )
             }
 
-            // HINT: Yellow pulsing glow
+            // HINT OVERLAY
             if (isHinted) {
                 Box(
                     Modifier
                         .fillMaxSize()
+                        .padding(start = 0.dp, top = 0.dp, end = depthRight, bottom = depthBottom)
+                        .border(borderThickness, Color.Yellow.copy(alpha = glowAlpha), RectangleShape)
                         .background(Color(0xFFFFEB3B).copy(alpha = glowAlpha * 0.4f))
-                        .border(2.dp, Color.Yellow.copy(alpha = glowAlpha), RectangleShape)
                 )
             }
         }

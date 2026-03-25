@@ -6,22 +6,41 @@ package com.rekluzgames.nikakudorimahjong.data.audio
 
 import android.content.Context
 import android.media.SoundPool
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SoundManager(private val context: Context) {
+@Singleton
+class SoundManager @Inject constructor(
+    // Added @param: to resolve the compiler warning
+    @param:ApplicationContext private val context: Context
+) {
     private var soundPool: SoundPool? = SoundPool.Builder().setMaxStreams(6).build()
     private val sounds = mutableMapOf<String, Int>()
+    private val loadedSounds = mutableSetOf<Int>()
     var isEnabled: Boolean = true
 
     init {
-        // Added "tile_tada" to the load list
-        listOf("tile_click", "tile_error", "tile_match", "tile_tada", "secret_unlocked", "thankyousomuch").forEach { name ->
+        soundPool?.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                loadedSounds.add(sampleId)
+            }
+        }
+
+        listOf("tile_click", "tile_error", "tile_match", "tile_tada", "secret_unlocked").forEach { name ->
             val resId = context.resources.getIdentifier(name, "raw", context.packageName)
-            if (resId != 0) sounds[name] = soundPool?.load(context, resId, 1) ?: 0
+            if (resId != 0) {
+                val id = soundPool?.load(context, resId, 1) ?: 0
+                sounds[name] = id
+            }
         }
     }
 
     fun play(name: String) {
-        if (isEnabled) sounds[name]?.let { soundPool?.play(it, 1f, 1f, 1, 0, 1f) }
+        val soundId = sounds[name] ?: return
+        if (isEnabled && loadedSounds.contains(soundId)) {
+            soundPool?.play(soundId, 1f, 1f, 1, 0, 1f)
+        }
     }
 
     fun release() {

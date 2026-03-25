@@ -15,64 +15,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rekluzgames.nikakudorimahjong.R
 import com.rekluzgames.nikakudorimahjong.presentation.ui.theme.MidnightBlue
 
 @Composable
 fun LoadingOverlay() {
-    val context = LocalContext.current
-    val iconId = context.resources.getIdentifier(
-        "nikakudorimahjong", "drawable", context.packageName
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MidnightBlue),
         contentAlignment = Alignment.Center
     ) {
-        // Background watermark image
-        if (iconId != 0) {
-            Image(
-                painter = painterResource(iconId),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(280.dp)
-                    .align(Alignment.Center),
-                alpha = 0.40f
-            )
-        }
+        // Full screen welcome image
+        Image(
+            painter = painterResource(R.drawable.welcome_screen),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
+        )
 
-        // Loading content on top
+        // Semi-transparent scrim so the spinner and text are readable
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.35f))
+        )
+
+        // Spinner and loading text pinned to the bottom
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
                 color = Color(0xFF00BFFF),
                 strokeWidth = 4.dp,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(40.dp)
             )
-
-            Spacer(Modifier.height(24.dp))
-
+            Spacer(Modifier.height(16.dp))
             Text(
                 text = "GENERATING SOLVABLE BOARD",
                 color = Color.White.copy(alpha = 0.9f),
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
-            )
-
-            Text(
-                text = "NIKAKUDORI MAHJONG",
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 10.sp,
-                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }

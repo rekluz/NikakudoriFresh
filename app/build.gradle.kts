@@ -6,24 +6,21 @@
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose) // Correct for Kotlin 2.0+
+    alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
+    id("com.google.dagger.hilt.android") version "2.59"      // ← was 2.56.1
 }
 
 android {
-    // This MUST match the package name at the top of your .kt files
     namespace = "com.rekluzgames.nikakudorimahjong"
-
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.rekluzgames.nikakudorimahjong"
-
         minSdk = 24
         targetSdk = 36
-
-        versionCode = 26031901
-        versionName = "5.1.0"
-
+        versionCode = 26032401
+        versionName = "5.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -44,7 +41,7 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true  // Enables BuildConfig.VERSION_NAME auto-generation
+        buildConfig = true
     }
 
     packaging {
@@ -52,7 +49,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
         jniLibs {
-            // Good fix for specialized graphics on high-end phones like S24
             keepDebugSymbols.add("**/libandroidx.graphics.path.so")
         }
     }
@@ -80,6 +76,14 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-gif:2.6.0")
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.59")        // ← was 2.56.1
+    ksp("com.google.dagger:hilt-android-compiler:2.59")          // ← was 2.56.1
 
     // Testing
     testImplementation(libs.junit)

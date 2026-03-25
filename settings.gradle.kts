@@ -32,6 +32,6 @@ dependencyResolutionManagement {
 
 // UPDATED: This changes the name displayed in Android Studio
 // and the internal Gradle project identifier.
-rootProject.name = "Nikakudori Fresh"
+rootProject.name = "Nikakudori Mahjong Redux"
 
 include(":app")

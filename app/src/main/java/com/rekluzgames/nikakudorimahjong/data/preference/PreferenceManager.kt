@@ -14,11 +14,17 @@ class PreferenceManager(context: Context) {
     fun isSoundEnabled() = prefs.getBoolean("sound", true)
     fun setSoundEnabled(v: Boolean) = prefs.edit().putBoolean("sound", v).apply()
 
+    fun isVibrationEnabled() = prefs.getBoolean("vibration", true)
+    fun setVibrationEnabled(v: Boolean) = prefs.edit().putBoolean("vibration", v).apply()
+
     fun getScale() = prefs.getFloat("scale", 1.0f)
     fun setScale(v: Float) = prefs.edit().putFloat("scale", v).apply()
 
     fun isFullScreen() = prefs.getBoolean("full_screen", false)
     fun setFullScreen(v: Boolean) = prefs.edit().putBoolean("full_screen", v).apply()
+
+    fun getLanguage() = prefs.getString("language", "") ?: ""
+    fun setLanguage(lang: String) = prefs.edit().putString("language", lang).apply()
 
     fun getGameMode(): GameMode {
         val modeName = prefs.getString("game_mode", GameMode.REGULAR.name)

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Rekluz Games. All rights reserved.
+  ~ This code and its assets are the exclusive property of Rekluz Games.
+  ~ Unauthorized copying, distribution, or commercial use is strictly prohibited.
+  -->
+
+<resources>
+    <!-- Core Identity -->
+    <string name="app_name">二角取り 麻雀</string>
+
+    <!-- Game State / UI -->
+    <string name="win_message">クリア！</string>
+    <string name="game_paused">一時停止</string>
+    <string name="loading_board">解ける盤面を生成中...</string>
+    <string name="stalemate_title">手詰まり！</string>
+    <string name="stalemate_subtitle">オプションを選んでください：</string>
+
+    <!-- Buttons -->
+    <string name="btn_play_again">もう一度プレイ</string>
+    <string name="btn_done">完了</string>
+    <string name="btn_resume">再開</string>
+    <string name="btn_menu">メニュー</string>
+    <string name="btn_hint">ヒント</string>
+    <string name="btn_boards">ボード</string>
+    <string name="btn_new_game">新しいゲーム</string>
+    <string name="btn_retry">リトライ</string>
+    <string name="btn_about">アプリについて</string>
+    <string name="btn_exit">終了</string>
+    <string name="btn_undo">元に戻す</string>
+    <string name="btn_cancel">キャンセル</string>
+    <string name="btn_shuffle_format">シャッフル (%1$d)</string>
+    <string name="btn_language">言語</string>
+    <string name="btn_settings">設定</string>
+    <string name="btn_finish">完了</string>
+    <string name="btn_save_score">保存する</string>
+    <string name="btn_confirm">確認？</string>
+    <string name="btn_clear_format">%1$s を消去</string>
+    <string name="btn_close">閉じる</string>
+
+    <!-- Difficulty -->
+    <string name="diff_easy">初級</string>
+    <string name="diff_normal">中級</string>
+    <string name="diff_hard">上級</string>
+    <string name="diff_extreme">超上級</string>
+
+    <!-- UI/Overlays -->
+    <string name="remaining_tiles_format">残り %1$d 牌</string>
+    <string name="title_settings">設定</string>
+    <string name="setting_mode">モード</string>
+    <string name="mode_regular">通常</string>
+    <string name="mode_gravity">重力</string>
+    <string name="setting_sound">サウンド</string>
+    <string name="setting_vibration">バイブ</string>
+    <string name="status_on">オン</string>
+    <string name="status_off">オフ</string>
+    <string name="setting_screen">画面表示</string>
+    <string name="screen_full">フル画面</string>
+    <string name="screen_normal">通常画面</string>
+    <string name="setting_scores">スコア</string>
+    <string name="status_view">見る</string>
+
+    <string name="title_select_board">ボードを選択</string>
+    <string name="board_size_format">%1$d × %2$d</string>
+
+    <string name="about_github_link">GitHubでプロジェクトを見る</string>
+    <string name="about_hello_world">ハローワールド！</string>
+    <string name="about_created_by">開発者</string>
+    <string name="developer_name">ライコ・ルジ</string>
+    <string name="about_thank_you">プレイしていただきありがとうございます</string>
+
+    <string name="final_time_format">クリアタイム: %1$s</string>
+    <string name="score_enter_name">3文字の名前を入力</string>
+    <string name="title_hall_of_fame">殿堂入り</string>
+    <string name="score_no_scores">まだスコアがありません</string>
+
+    <!-- Scoring -->
+    <string name="current_score_label">スコア: %1$d</string>
+    <string name="time_label">タイム</string>
+    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
+
+    <!-- About Screen -->
+    <string name="about_developer">開発: Rico Luzi / Rekluz Games</string>
+    <string name="about_description">日本の定番パズルゲーム。2つ以下の角（曲がり角2回まで）で同じ牌をつないで、盤面をクリアしよう！</string>
+    <string name="version_label">バージョン %1$s</string>
+
+    <!-- Social / Project -->
+    <string name="copyright_notice">© 2026 Rekluz Games. All Rights Reserved.</string>
+    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+</resources>

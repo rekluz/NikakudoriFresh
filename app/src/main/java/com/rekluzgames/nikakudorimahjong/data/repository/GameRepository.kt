@@ -5,7 +5,12 @@
 package com.rekluzgames.nikakudorimahjong.data.repository
 
 import com.rekluzgames.nikakudorimahjong.data.preference.PreferenceManager
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class GameRepository(private val prefs: PreferenceManager) {
+@Singleton
+class GameRepository @Inject constructor(
+    private val prefs: PreferenceManager
+) {
     fun getSettings() = prefs
 }

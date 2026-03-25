@@ -5,58 +5,88 @@
 package com.rekluzgames.nikakudorimahjong.presentation.ui.screen
 
 import android.app.Activity
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.request.ImageRequest
+import com.rekluzgames.nikakudorimahjong.R
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
-import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 import com.rekluzgames.nikakudorimahjong.presentation.ui.component.*
+import com.rekluzgames.nikakudorimahjong.presentation.ui.theme.MidnightBlue
+import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 
 @Composable
-fun GameScreen(viewModel: GameViewModel) {
+fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-
-    val screenPadding = if (!uiState.isFullScreen) {
+    var showLanguageOverlay by remember { mutableStateOf(false) }
+    val screenPadding = if (!uiState.isFullScreen)
         Modifier.windowInsetsPadding(WindowInsets.systemBars)
-    } else {
+    else
         Modifier.padding(0.dp)
+
+    // Resolve background resource ID once per game — changes only when
+    // backgroundImageName changes, which happens at startNewGame().
+    val bgResId = remember(uiState.backgroundImageName) {
+        context.resources.getIdentifier(
+            uiState.backgroundImageName, "drawable", context.packageName
+        )
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(uiState.themeColor).then(screenPadding)) {
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MidnightBlue)
+            .then(screenPadding)
+    ) {
         if (uiState.gameState == GameState.LOADING) {
             LoadingOverlay()
         } else {
-
-            // Watermark icon centred behind the board
-            val iconId = context.resources.getIdentifier(
-                "nikakudorimahjong", "drawable", context.packageName
-            )
-            if (iconId != 0) {
-                Image(
-                    painter = painterResource(iconId),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(280.dp)
-                        .align(Alignment.Center),
-                    alpha = 0.40f
-                )
-            }
-
-            Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                // Board area — background image fills this box completely.
+                // BoardGrid sits on top of the image with the dark overlay
+                // between them progressively revealing the image as tiles clear.
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
+                    // Background image fills the entire board area.
+                    // ContentScale.Crop ensures no letterboxing.
+                    if (bgResId != 0) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(bgResId)
+                                .decoderFactory(GifDecoder.Factory())
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // BoardGrid sits above the image. Its internal dark overlay
+                    // starts opaque and fades as tiles are removed, revealing
+                    // the image beneath tile by tile.
                     BoardGrid(uiState) { r, c -> viewModel.handleTileClick(r, c) }
                 }
 
@@ -67,29 +97,28 @@ fun GameScreen(viewModel: GameViewModel) {
                         .background(Color(0x99000000), RoundedCornerShape(16.dp))
                         .padding(horizontal = 8.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    // Tighter spacing so all buttons + timer fit without clipping
                     verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     MenuPillButton(
-                        text = "MENU",
+                        text = stringResource(R.string.btn_menu),
                         color = Color(0xFF2A2A2A)
                     ) { viewModel.changeState(GameState.PAUSED) }
 
-                    val hintText = if (uiState.canFinish) "FINISH" else "HINT"
-                    val hintColor = if (uiState.canFinish) Color(0xFFCC2200) else Color(0xFF00BFFF)
-
-                    MenuPillButton(text = hintText, color = hintColor) {
-                        viewModel.getHint()
-                    }
+                    val hText = if (uiState.canFinish)
+                        stringResource(R.string.btn_finish)
+                    else
+                        stringResource(R.string.btn_hint)
+                    val hColor = if (uiState.canFinish) Color(0xFFCC2200) else Color(0xFF00BFFF)
+                    MenuPillButton(text = hText, color = hColor) { viewModel.getHint() }
 
                     MenuPillButton(
-                        text = "SHUFFLE (${uiState.shufflesRemaining})",
+                        text = stringResource(R.string.btn_shuffle_format, uiState.shufflesRemaining),
                         enabled = uiState.shufflesRemaining > 0,
                         color = Color(0xFF708090)
                     ) { viewModel.shuffle() }
 
                     MenuPillButton(
-                        text = "UNDO",
+                        text = stringResource(R.string.btn_undo),
                         enabled = uiState.canUndo,
                         color = Color(0xFF708090)
                     ) { viewModel.undo() }
@@ -102,35 +131,36 @@ fun GameScreen(viewModel: GameViewModel) {
                     )
 
                     MenuPillButton(
-                        text = "SETTINGS",
+                        text = stringResource(R.string.btn_settings),
                         color = Color(0xFF2A2A2A)
                     ) { viewModel.changeState(GameState.OPTIONS) }
 
                     MenuPillButton(
-                        text = "BOARDS",
+                        text = stringResource(R.string.btn_boards),
                         color = Color(0xFF2A2A2A)
                     ) { viewModel.changeState(GameState.BOARDS) }
 
+                    MenuPillButton(
+                        text = stringResource(R.string.btn_language),
+                        color = Color(0xFF2A2A2A)
+                    ) { showLanguageOverlay = true }
+
                     Spacer(modifier = Modifier.weight(1f))
 
-                    val remaining = uiState.remainingTilesCount
-                    if (remaining > 0) {
-                        androidx.compose.material3.Text(
-                            text = "$remaining tiles",
+                    if (uiState.remainingTilesCount > 0) {
+                        Text(
+                            text = stringResource(R.string.remaining_tiles_format, uiState.remainingTilesCount),
                             color = Color.White.copy(alpha = 0.4f),
-                            fontSize = androidx.compose.ui.unit.TextUnit(
-                                9f,
-                                androidx.compose.ui.unit.TextUnitType.Sp
-                            ),
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-
-                    TimerDisplay(uiState.timeFormatted, uiState.timeSeconds)
+                    TimerDisplay(viewModel = viewModel)
                 }
             }
         }
 
+        // Overlays
         when (uiState.gameState) {
             GameState.PAUSED      -> PauseOverlay(viewModel) { (context as? Activity)?.finish() }
             GameState.BOARDS      -> BoardsOverlay(viewModel)
@@ -139,7 +169,26 @@ fun GameScreen(viewModel: GameViewModel) {
             GameState.SCORE_ENTRY -> ScoreEntryOverlay(viewModel)
             GameState.SCORE       -> ScoreboardOverlay(viewModel)
             GameState.NO_MOVES    -> StalemateOverlay(viewModel)
+            GameState.QUOTE       -> QuoteOverlay(viewModel)
             else -> {}
+        }
+
+        // Particle overlay — parameters and behaviour unchanged
+        ParticleOverlay(
+            triggerVictoryStorm = uiState.gameState == GameState.WON ||
+                    uiState.gameState == GameState.SCORE_ENTRY,
+            selectionPos = uiState.lastMatchedPair?.let { Offset(400f, 400f) },
+            isScoreEntryActive = uiState.gameState == GameState.SCORE_ENTRY
+        )
+
+        if (showLanguageOverlay) {
+            LanguageOverlay(
+                onSelect = { lang ->
+                    showLanguageOverlay = false
+                    onLanguageChange(lang)
+                },
+                onClose = { showLanguageOverlay = false }
+            )
         }
     }
 }

@@ -14,5 +14,6 @@ enum class GameState {
     WON,
     NO_MOVES,
     SCORE,
-    SCORE_ENTRY
+    SCORE_ENTRY,
+    QUOTE
 }

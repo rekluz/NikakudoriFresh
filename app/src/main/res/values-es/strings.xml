@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Rekluz Games. All rights reserved.
+  ~ This code and its assets are the exclusive property of Rekluz Games.
+  ~ Unauthorized copying, distribution, or commercial use is strictly prohibited.
+  -->
+
+<resources>
+    <!-- Core Identity -->
+    <string name="app_name">Nikakudori Mahjong</string>
+
+    <!-- Game State / UI -->
+    <string name="win_message">¡VICTORIA!</string>
+    <string name="game_paused">EN PAUSA</string>
+    <string name="loading_board">GENERANDO TABLERO RESOLUBLE...</string>
+    <string name="stalemate_title">¡SIN MÁS MOVIMIENTOS!</string>
+    <string name="stalemate_subtitle">Elige una opción:</string>
+
+    <!-- Buttons -->
+    <string name="btn_play_again">JUGAR DE NUEVO</string>
+    <string name="btn_done">HECHO</string>
+    <string name="btn_resume">CONTINUAR</string>
+    <string name="btn_menu">MENÚ</string>
+    <string name="btn_hint">PISTA</string>
+    <string name="btn_boards">TABLEROS</string>
+    <string name="btn_new_game">NUEVO JUEGO</string>
+    <string name="btn_retry">REINTENTAR</string>
+    <string name="btn_about">ACERCA DE</string>
+    <string name="btn_exit">SALIR</string>
+    <string name="btn_undo">DESHACER</string>
+    <string name="btn_cancel">CANCELAR</string>
+    <string name="btn_shuffle_format">MEZCLAR (%1$d)</string>
+    <string name="btn_language">IDIOMA</string>
+    <string name="btn_settings">AJUSTES</string>
+    <string name="btn_finish">TERMINAR</string>
+    <string name="btn_save_score">GUARDAR PUNTUACIÓN</string>
+    <string name="btn_confirm">¿CONFIRMAR?</string>
+    <string name="btn_clear_format">BORRAR %1$s</string>
+    <string name="btn_close">CERRAR</string>
+
+    <!-- Difficulty -->
+    <string name="diff_easy">FÁCIL</string>
+    <string name="diff_normal">NORMAL</string>
+    <string name="diff_hard">DIFÍCIL</string>
+    <string name="diff_extreme">EXTREMO</string>
+
+    <!-- UI/Overlays -->
+    <string name="remaining_tiles_format">%1$d fichas</string>
+    <string name="title_settings">AJUSTES</string>
+    <string name="setting_mode">MODO</string>
+    <string name="mode_regular">REGULAR</string>
+    <string name="mode_gravity">GRAVEDAD</string>
+    <string name="setting_sound">SONIDO</string>
+    <string name="setting_vibration">VIBRAR</string>
+    <string name="status_on">ACTIVADO</string>
+    <string name="status_off">DESACTIVADO</string>
+    <string name="setting_screen">PANTALLA</string>
+    <string name="screen_full">COMPLETA</string>
+    <string name="screen_normal">NORMAL</string>
+    <string name="setting_scores">PUNTUACIONES</string>
+    <string name="status_view">VER</string>
+
+    <string name="title_select_board">SELECCIONAR TABLERO</string>
+    <string name="board_size_format">%1$d × %2$d</string>
+
+    <string name="about_github_link">Ver proyecto en GitHub</string>
+    <string name="about_hello_world">¡Hola Mundo!</string>
+    <string name="about_created_by">Creado por</string>
+    <string name="developer_name">Rico Luzi</string>
+    <string name="about_thank_you">GRACIAS POR JUGAR</string>
+
+    <string name="final_time_format">Tiempo final: %1$s</string>
+    <string name="score_enter_name">INTRODUCE UN NOMBRE DE 3 LETRAS</string>
+    <string name="title_hall_of_fame">SALÓN DE LA FAMA</string>
+    <string name="score_no_scores">Aún no hay puntuaciones</string>
+
+    <!-- Scoring -->
+    <string name="current_score_label">Puntuación: %1$d</string>
+    <string name="time_label">TIEMPO</string>
+    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
+
+    <!-- About Screen -->
+    <string name="about_developer">Desarrollado por Rico Luzi / Rekluz Games</string>
+    <string name="about_description">Un clásico japonés de combinación de fichas. ¡Conecta pares idénticos con no más de dos giros para limpiar el tablero!</string>
+    <string name="version_label">Versión %1$s</string>
+
+    <!-- Social / Project -->
+    <string name="copyright_notice">© 2026 Rekluz Games. Todos los derechos reservados.</string>
+    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+</resources>
