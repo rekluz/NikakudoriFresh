@@ -4,20 +4,20 @@
 
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.key
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -62,27 +62,29 @@ fun BoardGrid(uiState: GameUIState, onTileClick: (Int, Int) -> Unit) {
         val gridHeight = yStep * (uiState.difficulty.rows - 1) + tileHeight
 
         // Smoothly animate the overlay alpha so the reveal feels gradual
-        // rather than jumping on each match.
         val animatedOverlayAlpha by animateFloatAsState(
             targetValue = uiState.boardOverlayAlpha,
             animationSpec = tween(durationMillis = 600),
             label = "boardReveal"
         )
 
-        // --- Compute Burst Position ---
-        val burstOffsetPx: Offset? = remember(uiState.lastMatchedPair) {
+        // ── CHANGED: compute both tile centres so each gets its own burst,
+        //    rather than a single burst at the midpoint between them.
+        val burstPositions: List<Offset> = remember(uiState.lastMatchedPair) {
             uiState.lastMatchedPair?.let { (p1, p2) ->
-                val x1 = (xStep * p1.second + tileWidth / 2f)
-                val y1 = (yStep * p1.first + tileHeight / 2f)
-                val x2 = (xStep * p2.second + tileWidth / 2f)
-                val y2 = (yStep * p2.first + tileHeight / 2f)
                 with(density) {
-                    Offset(
-                        x = ((x1 + x2) / 2f).dp.toPx(),
-                        y = ((y1 + y2) / 2f).dp.toPx()
+                    listOf(
+                        Offset(
+                            x = (xStep * p1.second + tileWidth / 2f).dp.toPx(),
+                            y = (yStep * p1.first  + tileHeight / 2f).dp.toPx()
+                        ),
+                        Offset(
+                            x = (xStep * p2.second + tileWidth / 2f).dp.toPx(),
+                            y = (yStep * p2.first  + tileHeight / 2f).dp.toPx()
+                        )
                     )
                 }
-            }
+            } ?: emptyList()
         }
 
         Box(
@@ -90,10 +92,6 @@ fun BoardGrid(uiState: GameUIState, onTileClick: (Int, Int) -> Unit) {
         ) {
 
             // --- Background Reveal Overlay ---
-            // Sits at zIndex 0 behind all tiles. Starts nearly opaque and
-            // fades away as tiles are removed, revealing the background image.
-            // MidnightBlue matches the screen background so the reveal is
-            // seamless rather than showing a hard black rectangle.
             if (animatedOverlayAlpha > 0f) {
                 Canvas(
                     modifier = Modifier
@@ -143,9 +141,21 @@ fun BoardGrid(uiState: GameUIState, onTileClick: (Int, Int) -> Unit) {
                 }
             }
 
-            // --- Connection Line Overlay ---
+            // --- Animated Connection Line Overlay ---
             val pathPoints = uiState.lastMatchPath
             if (pathPoints != null && pathPoints.size >= 2) {
+
+                // Animate a float from 0.0 to 1.0 over 150ms
+                var lineProgress by remember { mutableStateOf(0f) }
+                LaunchedEffect(pathPoints) {
+                    lineProgress = 0f
+                    animate(
+                        initialValue = 0f,
+                        targetValue = 1f,
+                        animationSpec = tween(durationMillis = 150, easing = LinearEasing)
+                    ) { value, _ -> lineProgress = value }
+                }
+
                 Canvas(
                     modifier = Modifier
                         .size(width = gridWidth.dp, height = gridHeight.dp)
@@ -173,23 +183,31 @@ fun BoardGrid(uiState: GameUIState, onTileClick: (Int, Int) -> Unit) {
 
                     val pixelPoints = pathPoints.map { (r, c) -> getPointPx(r, c) }
 
-                    val linePath = Path().apply {
+                    // Build the full path
+                    val fullPath = Path().apply {
                         moveTo(pixelPoints[0].x, pixelPoints[0].y)
                         for (i in 1 until pixelPoints.size) {
                             lineTo(pixelPoints[i].x, pixelPoints[i].y)
                         }
                     }
 
+                    // Extract only the animated segment of the path
+                    val pathMeasure = PathMeasure()
+                    pathMeasure.setPath(fullPath, false)
+                    val animatedPath = Path()
+                    pathMeasure.getSegment(0f, pathMeasure.length * lineProgress, animatedPath, true)
+
+                    // Draw the animated glowing line
                     drawPath(
-                        path = linePath,
+                        path = animatedPath,
                         color = Color(0xFF00BFFF).copy(alpha = 0.8f),
-                        style = Stroke(width = 4f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        style = Stroke(width = 8f, cap = StrokeCap.Round, join = StrokeJoin.Round)
                     )
 
                     drawPath(
-                        path = linePath,
+                        path = animatedPath,
                         color = Color.White.copy(alpha = 0.9f),
-                        style = Stroke(width = 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
                     )
                 }
             }
@@ -197,7 +215,7 @@ fun BoardGrid(uiState: GameUIState, onTileClick: (Int, Int) -> Unit) {
             // --- Local Particle Layer ---
             ParticleOverlay(
                 triggerVictoryStorm = false,
-                selectionPos = burstOffsetPx,
+                selectionPositions = burstPositions,
                 modifier = Modifier
                     .matchParentSize()
                     .zIndex(Float.MAX_VALUE),

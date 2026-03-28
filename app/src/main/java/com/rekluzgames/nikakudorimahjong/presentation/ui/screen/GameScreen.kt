@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -39,8 +38,6 @@ fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}
     else
         Modifier.padding(0.dp)
 
-    // Resolve background resource ID once per game — changes only when
-    // backgroundImageName changes, which happens at startNewGame().
     val bgResId = remember(uiState.backgroundImageName) {
         context.resources.getIdentifier(
             uiState.backgroundImageName, "drawable", context.packageName
@@ -61,17 +58,12 @@ fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-                // Board area — background image fills this box completely.
-                // BoardGrid sits on top of the image with the dark overlay
-                // between them progressively revealing the image as tiles clear.
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Background image fills the entire board area.
-                    // ContentScale.Crop ensures no letterboxing.
                     if (bgResId != 0) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
@@ -84,9 +76,6 @@ fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}
                         )
                     }
 
-                    // BoardGrid sits above the image. Its internal dark overlay
-                    // starts opaque and fades as tiles are removed, revealing
-                    // the image beneath tile by tile.
                     BoardGrid(uiState) { r, c -> viewModel.handleTileClick(r, c) }
                 }
 
@@ -173,11 +162,13 @@ fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}
             else -> {}
         }
 
-        // Particle overlay — parameters and behaviour unchanged
+        // ── CHANGED: selectionPositions replaces selectionPos.
+        //    This top-level overlay handles only the victory storm;
+        //    match bursts are fired by the BoardGrid's own ParticleOverlay.
         ParticleOverlay(
             triggerVictoryStorm = uiState.gameState == GameState.WON ||
                     uiState.gameState == GameState.SCORE_ENTRY,
-            selectionPos = uiState.lastMatchedPair?.let { Offset(400f, 400f) },
+            selectionPositions = emptyList(),
             isScoreEntryActive = uiState.gameState == GameState.SCORE_ENTRY
         )
 
