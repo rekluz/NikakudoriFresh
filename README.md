@@ -1,9 +1,10 @@
-# Nikakudori Mahjong Redux
+<p align="center"> <h1 align="center" style="font-size: 48px;">Nikakudori Mahjong Redux</h1>
+<div align="center">
 A beautiful and peaceful mahjong game that offers players a relaxing game. When completed,the board clears and scenes of Japan are displayed along with an ancient proverb such as Nana korobi ya oki (七転び八起き), which translates to "Fall down seven times, stand up eight."
 A reimagined Nikakudori Mahjong that has been rebuilt with a new MVVM organized structure. This rework makes the app run much smoother and includes several new features for a better playing experience. No ads, no tracking, no analytics and no stress.
 
-<div align="center">
-<img width="250" height="250" alt="REDUX_normal" src="https://github.com/user-attachments/assets/4cd59b99-6dfe-4df8-af76-f6d25183471b" /></p><img width="450" height="250" alt="gameboard" src="https://github.com/user-attachments/assets/51df2e5c-b156-49a1-89b8-00b85c9f7ce7" />
+<div align="center"><img width="450" height="250" alt="gameboard" src="https://github.com/user-attachments/assets/51df2e5c-b156-49a1-89b8-00b85c9f7ce7" /></p>
+<img width="250" height="250" alt="REDUX_normal" src="https://github.com/user-attachments/assets/4cd59b99-6dfe-4df8-af76-f6d25183471b" />
 
 
 
