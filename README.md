@@ -2,7 +2,7 @@
 <div align="center">
 A beautiful and peaceful mahjong game that offers players a relaxing game. When completed,the board clears and scenes of Japan are displayed along with an ancient proverb such as Nana korobi ya oki (七転び八起き), which translates to "Fall down seven times, stand up eight."
 A reimagined Nikakudori Mahjong that has been rebuilt with a new MVVM organized structure. This rework makes the app run much smoother and includes several new features for a better playing experience. No ads, no tracking, no analytics and no stress.
-  
+<br><br>  
 <div align="center">
   <img width="450" height="250" alt="gameboard" src="https://github.com/user-attachments/assets/93bad133-f235-4ff3-a134-97b33612e068" />
   <br>
