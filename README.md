@@ -5,4 +5,6 @@ A reimagined Nikakudori Mahjong that has been rebuilt with a new MVVM organized 
 
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
  * This code and its assets are the exclusive property of Rekluz Games.
- * Unauthorized copying, distribution, or commercial use is strictly prohibited.
+Personal Use: You may view and fork this repository for personal, educational, and non-commercial study only.
+Prohibited Use: No part of this project may be redistributed, modified for public use, or used in commercial products without express written permission.
+No Warranty: This software is provided "as-is," without warranty of any kind.
