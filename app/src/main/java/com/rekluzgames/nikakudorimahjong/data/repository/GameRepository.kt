@@ -18,12 +18,14 @@ class GameRepository @Inject constructor(
     // Settings reads
     fun isSoundEnabled() = prefs.isSoundEnabled()
     fun isVibrationEnabled() = prefs.isVibrationEnabled()
+    fun isMusicEnabled() = prefs.isMusicEnabled()
     fun isFullScreen() = prefs.isFullScreen()
     fun getGameMode() = prefs.getGameMode()
 
     // Settings writes
     fun setSoundEnabled(v: Boolean) = prefs.setSoundEnabled(v)
     fun setVibrationEnabled(v: Boolean) = prefs.setVibrationEnabled(v)
+    fun setMusicEnabled(v: Boolean) = prefs.setMusicEnabled(v)
     fun setFullScreen(v: Boolean) = prefs.setFullScreen(v)
     fun setGameMode(mode: GameMode) = prefs.setGameMode(mode)
 
@@ -52,6 +54,7 @@ class GameRepository @Inject constructor(
     fun loadInitialSettings() = InitialSettings(
         isSoundEnabled = prefs.isSoundEnabled(),
         isVibrationEnabled = prefs.isVibrationEnabled(),
+        isMusicEnabled = prefs.isMusicEnabled(),
         isFullScreen = prefs.isFullScreen(),
         gameMode = prefs.getGameMode()
     )
@@ -60,6 +63,7 @@ class GameRepository @Inject constructor(
 data class InitialSettings(
     val isSoundEnabled: Boolean,
     val isVibrationEnabled: Boolean,
+    val isMusicEnabled: Boolean,
     val isFullScreen: Boolean,
     val gameMode: GameMode
 )

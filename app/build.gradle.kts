@@ -19,8 +19,8 @@ android {
         applicationId = "com.rekluzgames.nikakudorimahjong"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26032802
-        versionName = "5.3.3"
+        versionCode = 26032901
+        versionName = "5.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -58,6 +58,7 @@ android {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        freeCompilerArgs.addAll("-Xannotation-default-target=param-property")
     }
 }
 
@@ -70,7 +71,7 @@ dependencies {
     // The "Brain" (ViewModel) support
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
     // The "Face" (Compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

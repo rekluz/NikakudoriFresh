@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2026 Rekluz Games. All rights reserved.
+ */
+
 package com.rekluzgames.nikakudorimahjong.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.rekluzgames.nikakudorimahjong.data.audio.MusicManager
 import com.rekluzgames.nikakudorimahjong.data.audio.SoundManager
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.model.GameMode
@@ -13,6 +18,7 @@ import javax.inject.Inject
 data class SettingsUIState(
     val isSoundEnabled: Boolean = true,
     val isVibrationEnabled: Boolean = true,
+    val isMusicEnabled: Boolean = true,
     val isFullScreen: Boolean = false,
     val gameMode: GameMode = GameMode.REGULAR,
     val version: String = ""
@@ -21,13 +27,13 @@ data class SettingsUIState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: GameRepository,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val musicManager: MusicManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUIState())
     val uiState = _uiState.asStateFlow()
-    
-    // Tracks if game mode was actually changed, so GameViewModel knows if it needs to restart
+
     private val _modeWasChanged = MutableStateFlow(false)
     val modeWasChanged = _modeWasChanged.asStateFlow()
 
@@ -41,11 +47,13 @@ class SettingsViewModel @Inject constructor(
             it.copy(
                 isSoundEnabled = settings.isSoundEnabled,
                 isVibrationEnabled = settings.isVibrationEnabled,
+                isMusicEnabled = settings.isMusicEnabled,
                 isFullScreen = settings.isFullScreen,
                 gameMode = settings.gameMode
             )
         }
         soundManager.isEnabled = settings.isSoundEnabled
+        musicManager.isEnabled = settings.isMusicEnabled
     }
 
     fun setVersion(v: String) {
@@ -63,6 +71,13 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(isVibrationEnabled = enabled) }
     }
 
+    fun updateMusicEnabled(enabled: Boolean) {
+        repository.setMusicEnabled(enabled)
+        musicManager.isEnabled = enabled
+        if (enabled) musicManager.resume() else musicManager.pause()
+        _uiState.update { it.copy(isMusicEnabled = enabled) }
+    }
+
     fun toggleFullScreen() {
         val next = !_uiState.value.isFullScreen
         repository.setFullScreen(next)
@@ -75,7 +90,7 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(gameMode = newMode) }
         _modeWasChanged.value = true
     }
-    
+
     fun acknowledgeModeChange() {
         _modeWasChanged.value = false
     }

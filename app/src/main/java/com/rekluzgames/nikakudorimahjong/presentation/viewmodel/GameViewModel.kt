@@ -3,6 +3,7 @@ package com.rekluzgames.nikakudorimahjong.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rekluzgames.nikakudorimahjong.data.audio.SoundManager
+import com.rekluzgames.nikakudorimahjong.data.audio.MusicManager
 import com.rekluzgames.nikakudorimahjong.data.haptic.HapticManager
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.engine.BackgroundManager
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val soundManager: SoundManager,
+    private val musicManager: MusicManager,
     private val hapticManager: HapticManager,
     private val engine: GameEngine,
     private val quoteManager: QuoteManager,
@@ -177,6 +179,7 @@ class GameViewModel @Inject constructor(
                 )
             }
             gameTimer.start(viewModelScope)
+            musicManager.start()
             resetInactivityTimer()
         }
     }
@@ -380,9 +383,56 @@ class GameViewModel @Inject constructor(
                 }
 
                 delay(AUTO_COMPLETE_STEP_DELAY_MS)
-                val gravityBoard = engine.applyGravity(matchedBoard)
-                if (gravityBoard != matchedBoard) _uiState.update { it.copy(board = gravityBoard) }
-                delay(AUTO_COMPLETE_STEP_DELAY_MS)
+                fun autoComplete() {
+                    if (!_uiState.value.canFinish || autoCompleteJob?.isActive == true) return
+                    inactivityJob?.cancel()
+                    matchLineJob?.cancel()
+
+                    autoCompleteJob = viewModelScope.launch {
+                        var lastBoard = _uiState.value.board
+
+                        while (isActive) {
+                            val currentBoard = _uiState.value.board
+                            val matches = HintFinder.findAllMatches(currentBoard)
+                            if (matches.isEmpty()) {
+                                if (engine.isGameOver(currentBoard)) { delay(HANDLE_WIN_ANIMATION_DELAY_MS); handleWin() }
+                                break
+                            }
+
+                            val (p1, p2) = matches.first()
+                            val path = PathFinder.getPath(p1, p2, currentBoard) ?: listOf(p1, p2)
+                            soundManager.play("tile_match")
+                            hapticManager.tileMatch()
+                            showMatchLine(path, p1, p2)
+
+                            val matchedBoard = engine.attemptMatch(p1, p2, currentBoard) ?: break
+                            lastBoard = matchedBoard
+
+                            _uiState.update {
+                                it.copy(
+                                    board = matchedBoard,
+                                    selectedTile = null,
+                                    allAvailableHints = emptyList(),
+                                    currentHintIndex = -1
+                                )
+                            }
+
+                            delay(AUTO_COMPLETE_STEP_DELAY_MS)
+                        }
+
+                        // Apply gravity once after all tiles are cleared
+                        val gravityBoard = engine.applyGravity(lastBoard)
+                        if (gravityBoard != lastBoard) {
+                            delay(AUTO_COMPLETE_STEP_DELAY_MS)
+                            _uiState.update { it.copy(board = gravityBoard) }
+                        }
+
+                        if (engine.isGameOver(_uiState.value.board)) {
+                            delay(AUTO_COMPLETE_WIN_DELAY_MS)
+                            handleWin()
+                        }
+                    }
+                }
 
                 if (engine.isGameOver(_uiState.value.board)) {
                     delay(AUTO_COMPLETE_WIN_DELAY_MS)

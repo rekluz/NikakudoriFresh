@@ -17,6 +17,9 @@ class PreferenceManager(context: Context) {
     fun isVibrationEnabled() = prefs.getBoolean("vibration", true)
     fun setVibrationEnabled(v: Boolean) = prefs.edit().putBoolean("vibration", v).apply()
 
+    fun isMusicEnabled() = prefs.getBoolean("music", true)
+    fun setMusicEnabled(v: Boolean) = prefs.edit().putBoolean("music", v).apply()
+
     fun getScale() = prefs.getFloat("scale", 1.0f)
     fun setScale(v: Float) = prefs.edit().putFloat("scale", v).apply()
 
@@ -35,7 +38,6 @@ class PreferenceManager(context: Context) {
         prefs.edit().putString("game_mode", mode.name).apply()
     }
 
-    // Per-difficulty score keys: "scores_EASY", "scores_NORMAL", etc.
     private fun scoreKey(difficulty: String) = "scores_$difficulty"
 
     fun getHighScores(difficulty: String): Set<String> =
@@ -47,7 +49,6 @@ class PreferenceManager(context: Context) {
     fun clearHighScores(difficulty: String) =
         prefs.edit().remove(scoreKey(difficulty)).apply()
 
-    // Convenience: get scores for all difficulties at once
     fun getAllHighScores(): Map<String, Set<String>> =
         Difficulty.entries.associate { it.label to getHighScores(it.label) }
 }

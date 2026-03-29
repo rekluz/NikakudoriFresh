@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -51,9 +52,9 @@ fun AboutScreen(viewModel: GameViewModel) {
         ) {
             // ── Background image ──────────────────────────────────────────────
             Image(
-                painter = painterResource(R.drawable.about_bg), // ← swap with your drawable name
+                painter = painterResource(R.drawable.about_bg),
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier.matchParentSize()
             )
 
@@ -138,10 +139,10 @@ fun AboutScreen(viewModel: GameViewModel) {
 
                         // Auto-peek scroll to hint that content is scrollable
                         LaunchedEffect(Unit) {
-                            delay(300)                        // short pause after appear
-                            scrollState.animateScrollTo(120) // peek down to reveal button
+                            delay(300)
+                            scrollState.animateScrollTo(120)
                             delay(400)
-                            scrollState.animateScrollTo(0)   // scroll back up
+                            scrollState.animateScrollTo(0)
                         }
 
                         Column(
@@ -151,49 +152,50 @@ fun AboutScreen(viewModel: GameViewModel) {
                                 .padding(vertical = 4.dp)
                                 .verticalScroll(scrollState)
                         ) {
-                            Text(
-                                text = stringResource(R.string.about_hello_world),
-                                color = Color.White,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.DarkGray)
-                                    .border(3.dp, Color(0xFF00BFFF), CircleShape)
-                                    .padding(4.dp)
-                                    .clickable {
-                                        viewModel.closeAbout()
-                                        viewModel.changeState(GameState.PLAYING)
-                                    }
+                            // helloworld placeholder
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                val id = context.resources.getIdentifier(
-                                    "my_photo", "drawable", context.packageName
-                                )
-                                if (id != 0) {
-                                    Image(
-                                        painter = painterResource(id),
-                                        contentDescription = "Developer Photo",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                Box(
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.DarkGray)
+                                        .border(3.dp, Color(0xFF00BFFF), CircleShape)
+                                        .padding(4.dp)
+                                        .clickable {
+                                            viewModel.closeAbout()
+                                            viewModel.changeState(GameState.PLAYING)
+                                        }
+                                ) {
+                                    val id = context.resources.getIdentifier(
+                                        "my_photo", "drawable", context.packageName
+                                    )
+                                    if (id != 0) {
+                                        Image(
+                                            painter = painterResource(id),
+                                            contentDescription = "Developer Photo",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                        )
+                                    }
+                                }
+
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.about_created_by),
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.developer_name),
+                                        color = Color.White,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
-
-                            Text(
-                                text = stringResource(R.string.about_created_by),
-                                color = Color.Gray,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = stringResource(R.string.developer_name),
-                                color = Color.White,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
 
                             Spacer(Modifier.height(8.dp))
 

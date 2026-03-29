@@ -7,8 +7,8 @@
 
 <resources>
     <!-- Core Identity -->
-    <string name="app_name">Nikakudori Mahjong</string>
-
+    <string name="app_name">Nikakudori Mahjong Redux</string>
+    <string name="setting_music">Music</string>
     <!-- Game State / UI -->
     <string name="win_message">VICTORY!</string>
     <string name="game_paused">PAUSED</string>

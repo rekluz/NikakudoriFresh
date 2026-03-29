@@ -73,7 +73,7 @@ fun TileView(
     // 1. Calculate the target scale: 1.2f stretch for explosion, 1.1f pop for selection
     val targetScale = when {
         isExploding -> 1.2f  // Pre-burst implosion stretch (150ms window)
-        isSelected -> 1.1f   // Tactile selection pop (NO TILT)
+        //  isSelected -> 1.1f   // Tactile selection pop (NO TILT)
         else -> 1.0f         // Normal state
     }
 
@@ -122,15 +122,17 @@ fun TileView(
             }
 
             // SELECTION OVERLAY
+            // SELECTION OVERLAY
             if (isSelected) {
                 Box(
                     Modifier
                         .fillMaxSize()
                         .padding(start = 0.dp, top = 0.dp, end = depthRight, bottom = depthBottom)
-                        .border(borderThickness, Color.Cyan, RectangleShape)
-                        .background(Color(0xFF00BFFF).copy(alpha = 0.4f))
+                        .border(borderThickness, Color.Cyan.copy(alpha = glowAlpha), RectangleShape)
+                        .background(Color(0xFF00BFFF).copy(alpha = glowAlpha * 0.4f))
                 )
             }
+
 
             // HINT OVERLAY
             if (isHinted) {
