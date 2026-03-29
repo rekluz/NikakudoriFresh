@@ -70,35 +70,27 @@ fun TileView(
         ), label = "alpha"
     )
 
-    // 1. Calculate the target scale based on state
+    // 1. Calculate the target scale: 1.2f stretch for explosion, 1.1f pop for selection
     val targetScale = when {
         isExploding -> 1.2f  // Pre-burst implosion stretch (150ms window)
-        isSelected -> 1.1f   // Tactile selection pop
+        isSelected -> 1.1f   // Tactile selection pop (NO TILT)
         else -> 1.0f         // Normal state
     }
 
-    // Animate scale. Use a bouncy spring for selection, and a smooth tween for the explosion.
+    // Animate scale: Use a bouncy spring for selection, and a smooth tween for the explosion.
     val animatedScale by animateFloatAsState(
         targetValue = targetScale,
         animationSpec = if (isExploding) tween(durationMillis = 150) else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "scale"
     )
 
-    // 2. Selection Rotation (tilt slightly when touched)
-    val targetRotation = if (isSelected && !isExploding) 3f else 0f
-    val animatedRotation by animateFloatAsState(
-        targetValue = targetRotation,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "rotation"
-    )
-
-    // 3. Shrink to absolutely nothing starting exactly at 150ms
+    // 2. Shrink to absolutely nothing starting exactly at 150ms (The Implosion)
     AnimatedVisibility(
         visible = !tile.isRemoved,
         enter = fadeIn(),
         exit = scaleOut(
             animationSpec = tween(durationMillis = 100, delayMillis = 150, easing = FastOutLinearInEasing),
-            targetScale = 0.0f // Shrink to 0
+            targetScale = 0.0f // Shrink to 0 violently
         ) + fadeOut(
             animationSpec = tween(durationMillis = 100, delayMillis = 150)
         )
@@ -111,7 +103,7 @@ fun TileView(
                 .graphicsLayer {
                     scaleX = animatedScale
                     scaleY = animatedScale
-                    rotationZ = animatedRotation
+                    // NO rotationZ applied here, so the tile stays straight!
                 }
                 .clickable { onClick() },
             contentAlignment = Alignment.TopStart

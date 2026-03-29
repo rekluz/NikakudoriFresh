@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.rekluzgames.nikakudorimahjong.presentation.effects.ParticleOverlay
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameUIState
 
 @Composable

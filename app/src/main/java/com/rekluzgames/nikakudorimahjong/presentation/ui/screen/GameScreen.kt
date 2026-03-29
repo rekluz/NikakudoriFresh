@@ -24,16 +24,22 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.rekluzgames.nikakudorimahjong.R
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
+import com.rekluzgames.nikakudorimahjong.presentation.effects.ParticleOverlay
 import com.rekluzgames.nikakudorimahjong.presentation.ui.component.*
 import com.rekluzgames.nikakudorimahjong.presentation.ui.theme.MidnightBlue
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 
 @Composable
-fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}) {
+fun GameScreen(
+    viewModel: GameViewModel,
+    settingsViewModel: com.rekluzgames.nikakudorimahjong.presentation.viewmodel.SettingsViewModel,
+    onLanguageChange: (String) -> Unit = {}
+) {
     val uiState by viewModel.uiState.collectAsState()
+    val settingsState by settingsViewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showLanguageOverlay by remember { mutableStateOf(false) }
-    val screenPadding = if (!uiState.isFullScreen)
+    val screenPadding = if (!settingsState.isFullScreen)
         Modifier.windowInsetsPadding(WindowInsets.systemBars)
     else
         Modifier.padding(0.dp)
@@ -153,7 +159,7 @@ fun GameScreen(viewModel: GameViewModel, onLanguageChange: (String) -> Unit = {}
         when (uiState.gameState) {
             GameState.PAUSED      -> PauseOverlay(viewModel) { (context as? Activity)?.finish() }
             GameState.BOARDS      -> BoardsOverlay(viewModel)
-            GameState.OPTIONS     -> SettingsOverlay(viewModel)
+            GameState.OPTIONS     -> SettingsOverlay(viewModel, settingsViewModel)
             GameState.ABOUT       -> AboutScreen(viewModel)
             GameState.SCORE_ENTRY -> ScoreEntryOverlay(viewModel)
             GameState.SCORE       -> ScoreboardOverlay(viewModel)

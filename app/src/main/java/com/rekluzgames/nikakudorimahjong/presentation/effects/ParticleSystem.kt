@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
  */
 
-package com.rekluzgames.nikakudorimahjong.presentation.ui.component
+package com.rekluzgames.nikakudorimahjong.presentation.effects
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize

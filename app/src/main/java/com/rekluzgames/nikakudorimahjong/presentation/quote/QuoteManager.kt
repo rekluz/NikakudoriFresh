@@ -4,7 +4,7 @@
 
 package com.rekluzgames.nikakudorimahjong.domain.model
 
-import com.rekluzgames.nikakudorimahjong.presentation.ui.component.QuoteProvider
+import com.rekluzgames.nikakudorimahjong.presentation.quote.QuoteProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 

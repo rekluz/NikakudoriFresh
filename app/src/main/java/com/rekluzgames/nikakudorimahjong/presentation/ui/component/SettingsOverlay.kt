@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2026 Rekluz Games. All rights reserved.
- */
-
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
 
 import androidx.compose.foundation.background
@@ -23,12 +19,13 @@ import androidx.compose.ui.unit.sp
 import com.rekluzgames.nikakudorimahjong.domain.model.GameMode
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
+import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.SettingsViewModel
 import androidx.compose.ui.res.stringResource
 import com.rekluzgames.nikakudorimahjong.R
 
 @Composable
-fun SettingsOverlay(viewModel: GameViewModel) {
-    val uiState by viewModel.uiState.collectAsState()
+fun SettingsOverlay(gameViewModel: GameViewModel, settingsViewModel: SettingsViewModel) {
+    val settingsState by settingsViewModel.uiState.collectAsState()
 
     OverlayContainer {
         OverlayCard {
@@ -38,10 +35,10 @@ fun SettingsOverlay(viewModel: GameViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     SettingGridButton(
                         title = stringResource(R.string.setting_mode),
-                        status = if (uiState.gameMode == GameMode.REGULAR) stringResource(R.string.mode_regular) else stringResource(R.string.mode_gravity),
+                        status = if (settingsState.gameMode == GameMode.REGULAR) stringResource(R.string.mode_regular) else stringResource(R.string.mode_gravity),
                         isActive = true,
                         modifier = Modifier.weight(1f)
-                    ) { viewModel.toggleGameMode() }
+                    ) { settingsViewModel.toggleGameMode() }
 
                     // Sound + Vibration share the same weight(1f) slot as the old Sound button
                     Row(
@@ -50,41 +47,45 @@ fun SettingsOverlay(viewModel: GameViewModel) {
                     ) {
                         SettingGridButton(
                             title = stringResource(R.string.setting_sound),
-                            status = if (uiState.isSoundEnabled) stringResource(R.string.status_on) else stringResource(R.string.status_off),
-                            isActive = uiState.isSoundEnabled,
+                            status = if (settingsState.isSoundEnabled) stringResource(R.string.status_on) else stringResource(R.string.status_off),
+                            isActive = settingsState.isSoundEnabled,
                             modifier = Modifier.weight(1f)
-                        ) { viewModel.updateSoundEnabled(!uiState.isSoundEnabled) }
+                        ) { settingsViewModel.updateSoundEnabled(!settingsState.isSoundEnabled) }
 
                         SettingGridButton(
                             title = stringResource(R.string.setting_vibration),
-                            status = if (uiState.isVibrationEnabled) stringResource(R.string.status_on) else stringResource(R.string.status_off),
-                            isActive = uiState.isVibrationEnabled,
+                            status = if (settingsState.isVibrationEnabled) stringResource(R.string.status_on) else stringResource(R.string.status_off),
+                            isActive = settingsState.isVibrationEnabled,
                             modifier = Modifier.weight(1f)
-                        ) { viewModel.updateVibrationEnabled(!uiState.isVibrationEnabled) }
+                        ) { settingsViewModel.updateVibrationEnabled(!settingsState.isVibrationEnabled) }
                     }
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     SettingGridButton(
                         title = stringResource(R.string.setting_screen),
-                        status = if (uiState.isFullScreen) stringResource(R.string.screen_full) else stringResource(R.string.screen_normal),
-                        isActive = uiState.isFullScreen,
+                        status = if (settingsState.isFullScreen) stringResource(R.string.screen_full) else stringResource(R.string.screen_normal),
+                        isActive = settingsState.isFullScreen,
                         modifier = Modifier.weight(1f)
-                    ) { viewModel.toggleFullScreen() }
+                    ) { settingsViewModel.toggleFullScreen() }
 
                     SettingGridButton(
                         title = stringResource(R.string.setting_scores),
                         status = stringResource(R.string.status_view),
                         isActive = true,
                         modifier = Modifier.weight(1f)
-                    ) { viewModel.changeState(GameState.SCORE) }
+                    ) { gameViewModel.changeState(GameState.SCORE) }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             Box(modifier = Modifier.width(140.dp)) {
                 MenuPillButton(stringResource(R.string.btn_done), color = Color(0xFF00BFFF)) {
-                    viewModel.applySettingsAndResume()
+                    gameViewModel.applySettingsAndResume(
+                        modeChanged = settingsViewModel.modeWasChanged.value,
+                        acknowledgeModeChange = { settingsViewModel.acknowledgeModeChange() },
+                        currentDifficulty = gameViewModel.uiState.value.difficulty
+                    )
                 }
             }
         }

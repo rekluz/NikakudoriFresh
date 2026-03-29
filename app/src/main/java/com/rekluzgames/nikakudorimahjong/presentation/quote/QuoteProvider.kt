@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
  */
 
-package com.rekluzgames.nikakudorimahjong.presentation.ui.component
+package com.rekluzgames.nikakudorimahjong.presentation.quote
 
 object QuoteProvider {
 
@@ -36,7 +36,14 @@ object QuoteProvider {
         "If you do not enter the fire, you cannot find the gold.",
         "Every day is a good day.",
         "Be like the flower that gives its fragrance to the hand that crushes it.",
-        "The willow does not break under the weight of the snow."
+        "The willow does not break under the weight of the snow.",
+        "Time flies like an arrow.",
+        "It takes three years even to heat a stone.",
+        "Even dust, accumulated, becomes a mountain.",
+        "You don't feed a fish you've already caught.",
+        "A kite does not give birth to a falcon.",
+        "Start with politeness, end with politeness.",
+        "Exhaust all human affairs and wait on heaven's decree."
     )
 
     fun getShuffledQuotes(): MutableList<String> = masterList.shuffled().toMutableList()

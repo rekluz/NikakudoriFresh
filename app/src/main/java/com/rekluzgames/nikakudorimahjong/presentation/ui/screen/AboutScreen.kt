@@ -30,6 +30,7 @@ import com.rekluzgames.nikakudorimahjong.presentation.ui.component.MenuPillButto
 import com.rekluzgames.nikakudorimahjong.presentation.ui.component.OverlayContainer
 import androidx.compose.ui.res.stringResource
 import com.rekluzgames.nikakudorimahjong.R
+import com.rekluzgames.nikakudorimahjong.BuildConfig
 import kotlinx.coroutines.delay
 
 @Composable
@@ -97,7 +98,7 @@ fun AboutScreen(viewModel: GameViewModel) {
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 Text(
-                                    text = stringResource(R.string.version_label, uiState.version),
+                                    text = stringResource(R.string.version_label, BuildConfig.VERSION_NAME),
                                     color = Color.Gray,
                                     fontSize = 14.sp
                                 )
@@ -165,7 +166,7 @@ fun AboutScreen(viewModel: GameViewModel) {
                                     .border(3.dp, Color(0xFF00BFFF), CircleShape)
                                     .padding(4.dp)
                                     .clickable {
-                                        viewModel.resetAbout()
+                                        viewModel.closeAbout()
                                         viewModel.changeState(GameState.PLAYING)
                                     }
                             ) {
@@ -198,7 +199,7 @@ fun AboutScreen(viewModel: GameViewModel) {
 
                             Box(Modifier.width(260.dp)) {
                                 MenuPillButton(stringResource(R.string.about_thank_you), color = Color(0xFF00BFFF)) {
-                                    viewModel.resetAbout()
+                                    viewModel.closeAbout()
                                     viewModel.changeState(GameState.PLAYING)
                                 }
                             }

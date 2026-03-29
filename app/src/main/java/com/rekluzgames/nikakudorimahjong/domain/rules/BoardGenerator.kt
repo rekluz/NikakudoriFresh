@@ -8,6 +8,8 @@ import java.util.BitSet
 object BoardGenerator {
 
     private const val MAX_ATTEMPTS = 15
+    private const val TOTAL_TILE_TYPES = 34
+    
     private val random = Random.Default
 
     fun createBoard(difficulty: Difficulty): List<List<Tile>> {
@@ -23,21 +25,38 @@ object BoardGenerator {
     private fun generateTypePool(totalTiles: Int): IntArray {
         val pool = IntArray(totalTiles)
         var index = 0
-        var type = 0
+        
+        var availableTypes = (0 until TOTAL_TILE_TYPES).shuffled(random)
+        var typeIdx = 0
+        
+        fun getNextType(): Int {
+            if (typeIdx >= availableTypes.size) {
+                availableTypes = (0 until TOTAL_TILE_TYPES).shuffled(random)
+                typeIdx = 0
+            }
+            return availableTypes[typeIdx++]
+        }
 
         while (index + 4 <= totalTiles) {
-            repeat(4) { pool[index++] = type % 34 }
-            type++
+            val type = getNextType()
+            repeat(4) { pool[index++] = type }
         }
         while (index + 2 <= totalTiles) {
-            repeat(2) { pool[index++] = type % 34 }
-            type++
+            val type = getNextType()
+            repeat(2) { pool[index++] = type }
         }
 
         pool.shuffle(random)
         return pool
     }
 
+    /**
+     * Attempts to generate a solvable board by working backwards.
+     * It starts with a completely filled, but "removed/empty" board.
+     * It iteratively places pairs of tiles in locations that can legally connect
+     * across the currently empty spaces. Once all tiles are placed, 
+     * the sequence in reverse guarantees a valid winning path.
+     */
     private fun tryBackwardGeneration(difficulty: Difficulty): List<List<Tile>>? {
         val rows = difficulty.rows
         val cols = difficulty.cols
@@ -107,7 +126,7 @@ object BoardGenerator {
 
         val removed = BitSet(total)
         val types = IntArray(total)
-        val groups = Array(34) { mutableListOf<Int>() }
+        val groups = Array(TOTAL_TILE_TYPES) { mutableListOf<Int>() }
 
         board.flatten().forEachIndexed { i, tile ->
             types[i] = tile.type
@@ -162,7 +181,7 @@ object BoardGenerator {
     ): List<Pair<Int, Int>> {
         val found = ArrayList<Pair<Int, Int>>(16)
 
-        for (type in 0 until 34) {
+        for (type in 0 until TOTAL_TILE_TYPES) {
             val g = groups[type]
             if (g.size < 2) continue
 

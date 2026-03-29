@@ -19,14 +19,15 @@ android {
         applicationId = "com.rekluzgames.nikakudorimahjong"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26032701
-        versionName = "5.3.2"
+        versionCode = 26032801
+        versionName = "5.3.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

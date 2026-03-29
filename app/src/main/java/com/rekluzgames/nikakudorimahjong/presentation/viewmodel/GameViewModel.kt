@@ -1,40 +1,41 @@
-/*
- * Copyright (c) 2026 Rekluz Games. All rights reserved.
- */
-
 package com.rekluzgames.nikakudorimahjong.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rekluzgames.nikakudorimahjong.data.audio.SoundManager
 import com.rekluzgames.nikakudorimahjong.data.haptic.HapticManager
-// ADD THIS IMPORT:
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.engine.GameEngine
 import com.rekluzgames.nikakudorimahjong.domain.model.*
 import com.rekluzgames.nikakudorimahjong.domain.rules.BoardGenerator
 import com.rekluzgames.nikakudorimahjong.domain.rules.HintFinder
 import com.rekluzgames.nikakudorimahjong.domain.rules.PathFinder
+import com.rekluzgames.nikakudorimahjong.presentation.score.ScoreManager
+import com.rekluzgames.nikakudorimahjong.presentation.timer.GameTimer
+import com.rekluzgames.nikakudorimahjong.presentation.ui.component.TileInteractionHandler
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val soundManager: SoundManager,
     private val hapticManager: HapticManager,
-    private val repository: GameRepository,
     private val engine: GameEngine,
-    private val quoteManager: QuoteManager
+    private val quoteManager: QuoteManager,
+    private val scoreManager: ScoreManager,
+    private val gameTimer: GameTimer,
+    private val repository: GameRepository
 ) : ViewModel() {
+
+    private val tileHandler = TileInteractionHandler(engine)
 
     private val _uiState = MutableStateFlow(GameUIState())
     val uiState = _uiState.asStateFlow()
 
-    private val _timeSeconds = MutableStateFlow(0)
-    val timeSeconds = _timeSeconds.asStateFlow()
-    val timeFormatted: StateFlow<String> = _timeSeconds
+    val timeSeconds = gameTimer.timeSeconds
+    val timeFormatted: StateFlow<String> = gameTimer.timeSeconds
         .map { s -> "%02d:%02d".format(s / 60, s % 60) }
         .stateIn(viewModelScope, SharingStarted.Lazily, "00:00")
 
@@ -43,15 +44,10 @@ class GameViewModel @Inject constructor(
         "bg_006", "bg_007", "bg_008", "bg_009", "bg_010"
     )
 
-    private var timerJob: Job? = null
-    private var generationJob: Job? = null
-    private var stalemateCheckJob: Job? = null
     private var autoCompleteJob: Job? = null
     private var matchLineJob: Job? = null
     private var inactivityJob: Job? = null
     private var quoteJob: Job? = null
-
-    private var modeWasChanged = false
 
     init {
         loadSettingsAndScores()
@@ -59,55 +55,61 @@ class GameViewModel @Inject constructor(
     }
 
     private fun loadSettingsAndScores() {
-        val settings = repository.getSettings()
-        val allScores = Difficulty.entries.associate { diff ->
-            val parsed = settings.getHighScores(diff.label)
-                .mapNotNull { HighScore.deserialise(it) }
-                .sortedBy { it.time }
-                .take(5)
-            diff.label to parsed
-        }
         _uiState.update {
             it.copy(
-                isSoundEnabled = settings.isSoundEnabled(),
-                isVibrationEnabled = settings.isVibrationEnabled(),
-                isFullScreen = settings.isFullScreen(),
-                gameMode = settings.getGameMode(),
-                highScores = allScores
+                highScores = scoreManager.getAllHighScores()
             )
         }
-        soundManager.isEnabled = _uiState.value.isSoundEnabled
     }
 
-    fun setVersion(v: String) {
-        _uiState.update { it.copy(version = v) }
+    // -------------------------------------------------------------------------
+    // Simple state modifiers & Menus
+    // -------------------------------------------------------------------------
+    fun changeState(newState: GameState) {
+        _uiState.update {
+            if (it.gameState == GameState.PLAYING && newState != GameState.PLAYING) {
+                gameTimer.pause()
+            } else if (it.gameState != GameState.PLAYING && newState == GameState.PLAYING) {
+                gameTimer.start(viewModelScope)
+            }
+            it.copy(previousState = it.gameState, gameState = newState)
+        }
+    }
+
+    fun applySettingsAndResume(modeChanged: Boolean, acknowledgeModeChange: () -> Unit, currentDifficulty: Difficulty) {
+        if (modeChanged) {
+            startNewGame(currentDifficulty)
+            acknowledgeModeChange()
+        } else {
+            changeState(GameState.PLAYING)
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Score Handling delegated to ScoreManager
+    // -------------------------------------------------------------------------
+    fun selectScoreTab(tab: String) { _uiState.update { it.copy(selectedScoreTab = tab) } }
+    fun clearLastSavedScore() { _uiState.update { it.copy(lastSavedScore = null) } }
+    fun updatePlayerName(name: String) { _uiState.update { it.copy(playerName = name) } }
+
+    fun clearScores(diffLabel: String) {
+        scoreManager.clearScores(diffLabel)
+        _uiState.update { it.copy(highScores = scoreManager.getAllHighScores()) }
     }
 
     fun saveScoreAndShowBoard() {
         val state = _uiState.value
-        val medals = state.earnedMedals.toMutableList()
-        if (_timeSeconds.value < 120) medals.add(Medal.FLASH)
-
-        val newScore = HighScore(
-            name = state.playerName.ifBlank { "???" },
-            time = _timeSeconds.value,
-            difficulty = state.difficulty.label,
-            medals = medals
+        val newScore = scoreManager.processWin(
+            playerName = state.playerName,
+            timeSeconds = gameTimer.timeSeconds.value,
+            difficulty = state.difficulty,
+            usedHint = state.usedHint,
+            usedShuffle = state.usedShuffle
         )
-
-        val settings = repository.getSettings()
-        val trimmed = (settings.getHighScores(state.difficulty.label) + newScore.serialise())
-            .mapNotNull { HighScore.deserialise(it) }
-            .sortedBy { it.time }
-            .take(5)
-            .map { it.serialise() }
-            .toSet()
-
-        settings.saveHighScores(state.difficulty.label, trimmed)
-        loadSettingsAndScores()
 
         _uiState.update {
             it.copy(
+                highScores = scoreManager.getAllHighScores(),
                 selectedScoreTab = state.difficulty.label,
                 lastSavedScore = newScore,
                 gameState = GameState.SCORE
@@ -115,29 +117,19 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun clearScores(diffLabel: String) {
-        repository.getSettings().clearHighScores(diffLabel)
-        loadSettingsAndScores()
-    }
-
-    fun selectScoreTab(tab: String) {
-        _uiState.update { it.copy(selectedScoreTab = tab) }
-    }
-
-    fun clearLastSavedScore() {
-        _uiState.update { it.copy(lastSavedScore = null) }
-    }
-
-    fun startNewGame(diff: Difficulty) {
-        timerJob?.cancel()
-        generationJob?.cancel()
-        stalemateCheckJob?.cancel()
+    // -------------------------------------------------------------------------
+    // Core Game Flow
+    // -------------------------------------------------------------------------
+    private fun cancelAllGameLogicJobs() {
         inactivityJob?.cancel()
         autoCompleteJob?.cancel()
         matchLineJob?.cancel()
         quoteJob?.cancel()
-        modeWasChanged = false
-        _timeSeconds.value = 0
+    }
+
+    fun startNewGame(diff: Difficulty) {
+        cancelAllGameLogicJobs()
+        gameTimer.reset()
 
         val currentBg = _uiState.value.backgroundImageName
         val nextBg = if (backgroundPool.size > 1) {
@@ -165,11 +157,11 @@ class GameViewModel @Inject constructor(
             )
         }
 
-        generationJob = viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Default) {
             val startTime = System.currentTimeMillis()
             val board = BoardGenerator.createBoard(diff)
             val elapsed = System.currentTimeMillis() - startTime
-            val remaining = 3000L - elapsed
+            val remaining = BOARD_GENERATION_MIN_DELAY_MS - elapsed
             if (remaining > 0) delay(remaining)
 
             _uiState.update {
@@ -180,19 +172,14 @@ class GameViewModel @Inject constructor(
                     shufflesRemaining = diff.shuffles
                 )
             }
-            startTimer()
+            gameTimer.start(viewModelScope)
             resetInactivityTimer()
         }
     }
 
     fun retryGame() {
-        timerJob?.cancel()
-        stalemateCheckJob?.cancel()
-        inactivityJob?.cancel()
-        autoCompleteJob?.cancel()
-        matchLineJob?.cancel()
-        quoteJob?.cancel()
-        _timeSeconds.value = 0
+        cancelAllGameLogicJobs()
+        gameTimer.reset()
 
         val originalBoard = _uiState.value.originalBoard
         _uiState.update {
@@ -211,17 +198,15 @@ class GameViewModel @Inject constructor(
                 playerName = ""
             )
         }
-        startTimer()
+        gameTimer.start(viewModelScope)
         resetInactivityTimer()
     }
 
     private fun handleWin() {
-        timerJob?.cancel()
-        inactivityJob?.cancel()
-        autoCompleteJob?.cancel()
-        matchLineJob?.cancel()
+        cancelAllGameLogicJobs()
+        gameTimer.pause()
         soundManager.play("tile_tada")
-        haptic { hapticManager.gameWin() }
+        hapticManager.gameWin()
 
         _uiState.update {
             it.copy(
@@ -232,7 +217,7 @@ class GameViewModel @Inject constructor(
         }
 
         quoteJob = viewModelScope.launch {
-            delay(5_000L)
+            delay(QUOTE_SCREEN_DURATION_MS)
             if (_uiState.value.gameState == GameState.QUOTE) {
                 _uiState.update { it.copy(playerName = "", gameState = GameState.SCORE_ENTRY) }
             }
@@ -244,71 +229,35 @@ class GameViewModel @Inject constructor(
         _uiState.update { it.copy(playerName = "", gameState = GameState.SCORE_ENTRY) }
     }
 
+    // -------------------------------------------------------------------------
+    // Tile interaction logic 
+    // -------------------------------------------------------------------------
+
     fun handleTileClick(r: Int, c: Int) {
         val state = _uiState.value
         if (autoCompleteJob?.isActive == true) return
-        if (state.gameState != GameState.PLAYING || state.board[r][c].isRemoved) return
 
         resetInactivityTimer()
+        hapticManager.tileSelect()
 
-        if (state.selectedTile == null) {
-            _uiState.update {
-                it.copy(selectedTile = r to c, allAvailableHints = emptyList(), currentHintIndex = -1)
-            }
-            soundManager.play("tile_click")
-            haptic { hapticManager.tileSelect() }
-        } else {
-            val p1 = state.selectedTile!!
-            if (p1 == r to c) {
-                _uiState.update { it.copy(selectedTile = null) }
-                return
-            }
+        val result = tileHandler.handleClick(state, r, c)
 
-            val p2 = r to c
-            val path = PathFinder.getPath(p1, p2, state.board)
-            val matchedBoard = if (path != null) engine.attemptMatch(p1, p2, state.board) else null
+        _uiState.update { result.newState }
 
-            if (matchedBoard != null) {
-                soundManager.play("tile_match")
-                haptic { hapticManager.tileMatch() }
-                showMatchLine(path!!, p1, p2)
+        result.playSound?.let { soundManager.play(it) }
 
-                val boardBeforeMove = state.board
+        if (result.playSound == "tile_error") {
+            hapticManager.tileError()
+        } else if (result.playSound == "tile_match") {
+            hapticManager.tileMatch()
+        }
 
-                _uiState.update {
-                    it.copy(
-                        board = matchedBoard,
-                        selectedTile = null,
-                        allAvailableHints = emptyList(),
-                        currentHintIndex = -1,
-                        undoHistory = (it.undoHistory + listOf(boardBeforeMove)).takeLast(20)
-                    )
-                }
+        result.matchPath?.let { path ->
+            showMatchLine(path, result.matchedPair!!.first, result.matchedPair.second)
+        }
 
-                viewModelScope.launch {
-                    val finalBoard = if (state.gameMode == GameMode.GRAVITY) {
-                        delay(180L)
-                        val gravityBoard = engine.applyGravity(matchedBoard)
-                        _uiState.update { it.copy(board = gravityBoard) }
-                        gravityBoard
-                    } else {
-                        matchedBoard
-                    }
-
-                    if (engine.isGameOver(finalBoard)) {
-                        delay(400L)
-                        handleWin()
-                    } else {
-                        checkForStalemate(finalBoard)
-                    }
-                }
-            } else {
-                _uiState.update {
-                    it.copy(selectedTile = p2, allAvailableHints = emptyList(), currentHintIndex = -1)
-                }
-                soundManager.play("tile_error")
-                haptic { hapticManager.tileError() }
-            }
+        result.matchedBoard?.let { board ->
+            applyPostMatchEffects(board)
         }
     }
 
@@ -316,14 +265,16 @@ class GameViewModel @Inject constructor(
         val state = _uiState.value
         if (state.gameState != GameState.PLAYING) return
         if (state.canFinish) { autoComplete(); return }
+        
         _uiState.update { it.copy(usedHint = true) }
+        
         if (state.allAvailableHints.isEmpty()) {
             val hints = HintFinder.findAllMatches(state.board)
             if (hints.isNotEmpty()) {
                 _uiState.update { it.copy(allAvailableHints = hints, currentHintIndex = 0) }
             } else {
                 changeState(GameState.NO_MOVES)
-                haptic { hapticManager.noMoves() }
+                hapticManager.noMoves()
             }
         } else {
             _uiState.update {
@@ -376,14 +327,13 @@ class GameViewModel @Inject constructor(
                 lastMatchedPair = null
             )
         }
-        haptic { hapticManager.shuffle() }
+        hapticManager.shuffle()
         resetInactivityTimer()
         checkForStalemate(newBoard)
     }
 
     fun autoComplete() {
         if (!_uiState.value.canFinish || autoCompleteJob?.isActive == true) return
-        timerJob?.cancel()
         inactivityJob?.cancel()
         matchLineJob?.cancel()
 
@@ -392,14 +342,14 @@ class GameViewModel @Inject constructor(
                 val currentBoard = _uiState.value.board
                 val matches = HintFinder.findAllMatches(currentBoard)
                 if (matches.isEmpty()) {
-                    if (engine.isGameOver(currentBoard)) { delay(500L); handleWin() }
+                    if (engine.isGameOver(currentBoard)) { delay(HANDLE_WIN_ANIMATION_DELAY_MS); handleWin() }
                     break
                 }
 
                 val (p1, p2) = matches.first()
                 val path = PathFinder.getPath(p1, p2, currentBoard) ?: listOf(p1, p2)
                 soundManager.play("tile_match")
-                haptic { hapticManager.tileMatch() }
+                hapticManager.tileMatch()
                 showMatchLine(path, p1, p2)
 
                 val matchedBoard = engine.attemptMatch(p1, p2, currentBoard) ?: break
@@ -413,90 +363,67 @@ class GameViewModel @Inject constructor(
                     )
                 }
 
-                if (_uiState.value.gameMode == GameMode.GRAVITY) {
-                    delay(180L)
-                    val gravityBoard = engine.applyGravity(matchedBoard)
-                    _uiState.update { it.copy(board = gravityBoard) }
+                delay(AUTO_COMPLETE_STEP_DELAY_MS)
+                applyGravityIfNeeded(matchedBoard)
+                delay(AUTO_COMPLETE_STEP_DELAY_MS)
+
+                if (engine.isGameOver(_uiState.value.board)) {
+                    delay(AUTO_COMPLETE_WIN_DELAY_MS)
+                    handleWin()
+                    break
                 }
-
-                delay(450L)
             }
         }
     }
 
-    fun changeState(s: GameState) {
-        _uiState.update { it.copy(previousState = it.gameState, gameState = s) }
-    }
+    // -------------------------------------------------------------------------
+    // Utilities
+    // -------------------------------------------------------------------------
 
-    fun goBack() {
-        _uiState.update { it.copy(gameState = it.previousState) }
-    }
-
-    fun toggleFullScreen() {
-        val next = !_uiState.value.isFullScreen
-        repository.getSettings().setFullScreen(next)
-        _uiState.update { it.copy(isFullScreen = next) }
-    }
-
-    fun toggleGameMode() {
-        val newMode = if (_uiState.value.gameMode == GameMode.REGULAR) GameMode.GRAVITY else GameMode.REGULAR
-        repository.getSettings().setGameMode(newMode)
-        _uiState.update { it.copy(gameMode = newMode) }
-        modeWasChanged = true
-    }
-
-    fun updateSoundEnabled(enabled: Boolean) {
-        repository.getSettings().setSoundEnabled(enabled)
-        soundManager.isEnabled = enabled
-        _uiState.update { it.copy(isSoundEnabled = enabled) }
-    }
-
-    fun updateVibrationEnabled(enabled: Boolean) {
-        repository.getSettings().setVibrationEnabled(enabled)
-        _uiState.update { it.copy(isVibrationEnabled = enabled) }
-    }
-
-    fun applySettingsAndResume() {
-        if (modeWasChanged) startNewGame(_uiState.value.difficulty)
-        else changeState(GameState.PLAYING)
-        modeWasChanged = false
-    }
-
-    fun updatePlayerName(name: String) {
-        if (name.length <= 3) {
-            val sanitised = name.uppercase().filter { it != '|' }
-            _uiState.update { it.copy(playerName = sanitised) }
+    private fun showMatchLine(path: List<Pair<Int, Int>>, t1: Pair<Int, Int>, t2: Pair<Int, Int>) {
+        _uiState.update { it.copy(lastMatchPath = path, lastMatchedPair = Pair(t1, t2)) }
+        matchLineJob?.cancel()
+        matchLineJob = viewModelScope.launch {
+            delay(MATCH_LINE_DISPLAY_DURATION_MS)
+            _uiState.update { it.copy(lastMatchPath = null, lastMatchedPair = null) }
         }
     }
 
-    fun onAboutTileClick(id: Int, target: Int) {
-        soundManager.play("tile_click")
-        _uiState.update { state ->
-            val newSet = state.clearedAboutTiles + id
-            if (newSet.size >= target) {
-                soundManager.play("secret_unlocked")
-                state.copy(aboutStage = 1, clearedAboutTiles = emptySet())
+    private fun applyPostMatchEffects(newBoard: List<List<Tile>>) {
+        viewModelScope.launch {
+            val mode = repository.getGameMode()
+            if (mode == GameMode.GRAVITY) {
+                delay(BOARD_GRAVITY_ANIMATION_DELAY_MS)
+                applyGravityIfNeeded(newBoard)
             } else {
-                state.copy(clearedAboutTiles = newSet)
+                checkForStalemate(newBoard)
+            }
+
+            if (engine.isGameOver(_uiState.value.board)) {
+                delay(HANDLE_WIN_ANIMATION_DELAY_MS)
+                handleWin()
             }
         }
     }
 
-    fun resetAbout() {
-        _uiState.update { it.copy(aboutStage = 0, clearedAboutTiles = emptySet()) }
+    private fun applyGravityIfNeeded(board: List<List<Tile>>) {
+        val mode = repository.getGameMode()
+        if (mode != GameMode.GRAVITY) return
+        
+        val newBoard = engine.applyGravity(board)
+        if (newBoard != board) {
+            _uiState.update { it.copy(board = newBoard) }
+        }
+        checkForStalemate(newBoard)
     }
 
-    private fun haptic(action: () -> Unit) {
-        if (_uiState.value.isVibrationEnabled) action()
-    }
-
-    private fun startTimer() {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            while (isActive) {
-                delay(1000)
-                if (_uiState.value.gameState == GameState.PLAYING) {
-                    _timeSeconds.value += 1
+    private fun checkForStalemate(board: List<List<Tile>>) {
+        if (engine.isGameOver(board) || autoCompleteJob?.isActive == true) return
+        viewModelScope.launch(Dispatchers.Default) {
+            if (HintFinder.findAllMatches(board).isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    changeState(GameState.NO_MOVES)
+                    hapticManager.noMoves()
                 }
             }
         }
@@ -504,52 +431,59 @@ class GameViewModel @Inject constructor(
 
     private fun resetInactivityTimer() {
         inactivityJob?.cancel()
+        if (_uiState.value.gameState != GameState.PLAYING) return
         inactivityJob = viewModelScope.launch {
-            delay(25_000L)
-            val state = _uiState.value
-            if (state.gameState == GameState.PLAYING &&
-                state.allAvailableHints.isEmpty() &&
-                !state.canFinish
-            ) {
-                val hints = HintFinder.findAllMatches(state.board)
-                if (hints.isNotEmpty()) {
-                    _uiState.update { it.copy(allAvailableHints = hints, currentHintIndex = 0) }
-                }
-            }
+            delay(HINT_INACTIVITY_DELAY_MS)
+            getHint()
+        }
+    }
+    
+    // About pages delegation
+    fun nextAboutStage() { 
+        _uiState.update { it.copy(aboutStage = it.aboutStage + 1) } 
+    }
+    
+    fun previousAboutStage() { 
+        _uiState.update { it.copy(aboutStage = (it.aboutStage - 1).coerceAtLeast(0)) } 
+    }
+    
+    fun closeAbout() { 
+        _uiState.update { it.copy(aboutStage = 0, clearedAboutTiles = emptySet()) } 
+    }
+    
+    fun onAboutTileClick(index: Int, totalThreshold: Int = 11) {
+        soundManager.play("tile_match")
+        hapticManager.tileMatch()
+
+        val updatedSet = _uiState.value.clearedAboutTiles + index
+        if (updatedSet.size >= totalThreshold) {
+            soundManager.play("secret_unlocked")
+            _uiState.update { it.copy(clearedAboutTiles = updatedSet, aboutStage = it.aboutStage + 1) }
+        } else {
+            _uiState.update { it.copy(clearedAboutTiles = updatedSet) }
+        }
+    }
+    
+    fun goBack() {
+        val s = _uiState.value
+        when (s.gameState) {
+            GameState.OPTIONS -> changeState(s.previousState)
+            GameState.BOARDS -> changeState(s.previousState)
+            GameState.PAUSED -> changeState(GameState.PLAYING)
+            GameState.SCORE -> changeState(s.previousState)
+            GameState.ABOUT -> changeState(s.previousState)
+            else -> {}
         }
     }
 
-    private fun showMatchLine(path: List<Pair<Int, Int>>, p1: Pair<Int, Int>, p2: Pair<Int, Int>) {
-        matchLineJob?.cancel()
-        _uiState.update { it.copy(lastMatchPath = path, lastMatchedPair = p1 to p2) }
-        matchLineJob = viewModelScope.launch {
-            delay(400L)
-            _uiState.update { it.copy(lastMatchPath = null, lastMatchedPair = null) }
-        }
-    }
-
-    private fun checkForStalemate(board: List<List<Tile>>) {
-        stalemateCheckJob?.cancel()
-        stalemateCheckJob = viewModelScope.launch(Dispatchers.Default) {
-            if (engine.isGameOver(board)) return@launch
-            if (HintFinder.findAllMatches(board).isEmpty()) {
-                withContext(Dispatchers.Main) {
-                    changeState(GameState.NO_MOVES)
-                    haptic { hapticManager.noMoves() }
-                }
-            }
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        timerJob?.cancel()
-        generationJob?.cancel()
-        stalemateCheckJob?.cancel()
-        inactivityJob?.cancel()
-        autoCompleteJob?.cancel()
-        matchLineJob?.cancel()
-        quoteJob?.cancel()
-        soundManager.release()
+    companion object {
+        const val HINT_INACTIVITY_DELAY_MS = 10_000L
+        const val AUTO_COMPLETE_STEP_DELAY_MS = 150L
+        const val AUTO_COMPLETE_WIN_DELAY_MS = 300L
+        const val QUOTE_SCREEN_DURATION_MS = 5_000L
+        const val BOARD_GENERATION_MIN_DELAY_MS = 3000L
+        const val BOARD_GRAVITY_ANIMATION_DELAY_MS = 400L
+        const val HANDLE_WIN_ANIMATION_DELAY_MS = 500L
+        const val MATCH_LINE_DISPLAY_DURATION_MS = 500L
     }
 }

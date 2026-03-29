@@ -13,10 +13,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
+
 @Singleton
 class HapticManager @Inject constructor(
-    // Added @param: to resolve the compiler warning
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val repository: GameRepository
 ) {
     private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val manager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
@@ -27,14 +29,18 @@ class HapticManager @Inject constructor(
     }
 
     private fun vibrate(pattern: LongArray, amplitudes: IntArray, repeat: Int = -1) {
+        if (!repository.isVibrationEnabled()) return
         vibrator?.let {
             if (it.hasVibrator()) {
-                // Check if the device supports amplitude control (some older ones don't)
-                if (it.hasAmplitudeControl()) {
-                    it.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, repeat))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (it.hasAmplitudeControl()) {
+                        it.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, repeat))
+                    } else {
+                        it.vibrate(VibrationEffect.createWaveform(pattern, repeat))
+                    }
                 } else {
-                    // Fallback for older devices that only support on/off patterns
-                    it.vibrate(VibrationEffect.createWaveform(pattern, repeat))
+                    @Suppress("DEPRECATION")
+                    it.vibrate(pattern, repeat)
                 }
             }
         }

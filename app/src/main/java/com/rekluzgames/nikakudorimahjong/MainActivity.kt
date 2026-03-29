@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2026 Rekluz Games. All rights reserved.
- */
-
 package com.rekluzgames.nikakudorimahjong
 
 import android.content.Context
@@ -22,6 +18,7 @@ import com.rekluzgames.nikakudorimahjong.data.preference.PreferenceManager
 import com.rekluzgames.nikakudorimahjong.presentation.ui.screen.GameScreen
 import com.rekluzgames.nikakudorimahjong.presentation.ui.theme.NikakudoriTheme
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
+import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import javax.inject.Inject
@@ -53,17 +50,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val gameViewModel: GameViewModel by viewModels()
-            val uiState by gameViewModel.uiState.collectAsState()
+            val settingsViewModel: SettingsViewModel by viewModels()
+            val settingsState by settingsViewModel.uiState.collectAsState()
 
             LaunchedEffect(Unit) {
-                gameViewModel.setVersion(BuildConfig.VERSION_NAME)
+                settingsViewModel.setVersion(BuildConfig.VERSION_NAME)
             }
 
-            LaunchedEffect(uiState.isFullScreen) {
+            LaunchedEffect(settingsState.isFullScreen) {
                 val window = this@MainActivity.window
                 val controller = WindowCompat.getInsetsController(window, window.decorView)
 
-                if (uiState.isFullScreen) {
+                if (settingsState.isFullScreen) {
                     controller.hide(WindowInsetsCompat.Type.systemBars())
                     controller.systemBarsBehavior =
                         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -73,7 +71,10 @@ class MainActivity : ComponentActivity() {
             }
 
             NikakudoriTheme {
-                GameScreen(viewModel = gameViewModel) { newLang ->
+                GameScreen(
+                    viewModel = gameViewModel, 
+                    settingsViewModel = settingsViewModel
+                ) { newLang ->
                     preferenceManager.setLanguage(newLang)
                     recreate()
                 }
