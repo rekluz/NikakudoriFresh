@@ -19,7 +19,7 @@ android {
         applicationId = "com.rekluzgames.nikakudorimahjong"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26032801
+        versionCode = 26032802
         versionName = "5.3.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

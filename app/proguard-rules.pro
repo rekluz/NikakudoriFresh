@@ -20,18 +20,17 @@
 # -----------------------------------------------------------------------
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keep,allowdictionarywarnings class kotlinx.serialization.** { *; }
+-keep class kotlinx.serialization.** { *; }
 -keepclassmembers class kotlinx.serialization.** { *; }
 -keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
 -keepclassmembers,allowobfuscation class * {
     @kotlinx.serialization.Serializable <fields>;
 }
--keepnames class *@kotlinx.serialization.Serializable *
--keepclassmembers class *@kotlinx.serialization.Serializable * {
+-keepnames @kotlinx.serialization.Serializable class *
+-keepclassmembers @kotlinx.serialization.Serializable class * {
     <init>(...);
     <fields>;
 }
-
 # -----------------------------------------------------------------------
 # Kotlin Coroutines
 # -----------------------------------------------------------------------

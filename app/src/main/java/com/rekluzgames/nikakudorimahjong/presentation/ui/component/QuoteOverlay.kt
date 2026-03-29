@@ -70,7 +70,7 @@ fun QuoteOverlay(viewModel: GameViewModel) {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                text = "tap to continue",
+                text = "close",
                 color = Color.White.copy(alpha = 0.35f),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Normal,
