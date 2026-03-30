@@ -6,8 +6,7 @@ A reimagined Nikakudori Mahjong that has been rebuilt with a new MVVM organized 
 <div align="center">
   <img width="450" height="250" alt="gameboard" src="https://github.com/user-attachments/assets/93bad133-f235-4ff3-a134-97b33612e068" />
   <br>
-  <img width="250" height="250" alt="REDUX_normal" src="https://github.com/user-attachments/assets/4cd59b99-6dfe-4df8-af76-f6d25183471b" />
-</div>
+<img width="250" height="250" alt="REDUX_400x400" src="https://github.com/user-attachments/assets/2de55529-6790-4371-b76f-b147eed41436" /></div>
 
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
  * This code and its assets are the exclusive property of Rekluz Games.
