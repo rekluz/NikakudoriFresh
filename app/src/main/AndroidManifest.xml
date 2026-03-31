@@ -6,8 +6,11 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
     <application
         android:name=".NikakudoriApplication"
+        android:appCategory="game"
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:dataExtractionRules="@xml/data_extraction_rules"

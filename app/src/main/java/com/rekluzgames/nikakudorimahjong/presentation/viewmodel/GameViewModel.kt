@@ -159,7 +159,7 @@ class GameViewModel @Inject constructor(
                 lastSavedScore = null,
                 playerName = "",
                 backgroundImageName = backgroundManager.next(it.backgroundImageName),
-                currentQuote = quoteManager.next()
+                currentQuote = quoteManager.next(repository.getLanguage())
             )
         }
 
@@ -231,7 +231,11 @@ class GameViewModel @Inject constructor(
         quoteJob?.cancel()
         _uiState.update { it.copy(playerName = "", gameState = GameState.SCORE_ENTRY) }
     }
-
+    fun refreshQuote() {
+        _uiState.update {
+            it.copy(currentQuote = quoteManager.next(repository.getLanguage()))
+        }
+    }
     // -------------------------------------------------------------------------
     // Tile interaction
     // -------------------------------------------------------------------------
@@ -320,10 +324,15 @@ class GameViewModel @Inject constructor(
         val state = _uiState.value
         if (state.shufflesRemaining <= 0 || autoCompleteJob?.isActive == true) return
 
-        val activeTypes = state.board.flatten().filter { !it.isRemoved }.map { it.type }.shuffled()
-        var idx = 0
+        val activeTiles = state.board.flatten().filter { !it.isRemoved }
+        if (activeTiles.isEmpty()) return
+
+        val shuffledTiles = activeTiles.shuffled()
+        var index = 0
         val newBoard = state.board.map { row ->
-            row.map { tile -> if (!tile.isRemoved) tile.copy(type = activeTypes[idx++]) else tile }
+            row.map { tile ->
+                if (tile.isRemoved) tile else shuffledTiles[index++]
+            }
         }
 
         _uiState.update {
@@ -333,46 +342,64 @@ class GameViewModel @Inject constructor(
                 usedShuffle = true,
                 selectedTile = null,
                 allAvailableHints = emptyList(),
-                currentHintIndex = -1,
-                gameState = GameState.PLAYING,
-                lastMatchPath = null,
-                lastMatchedPair = null
+                currentHintIndex = -1
             )
         }
+        soundManager.play("shuffle")
         hapticManager.shuffle()
         resetInactivityTimer()
-        viewModelScope.launch(Dispatchers.Default) {
-            if (HintFinder.findAllMatches(newBoard).isEmpty()) {
-                withContext(Dispatchers.Main) {
-                    changeState(GameState.NO_MOVES)
-                    hapticManager.noMoves()
-                }
-            }
+    }
+
+    // -------------------------------------------------------------------------
+    // About Secret delegation
+    // -------------------------------------------------------------------------
+
+    fun onAboutTileClick(index: Int, threshold: Int) {
+        _uiState.update { aboutHandler.onTileClick(it, index, threshold) }
+    }
+
+    fun closeAbout() {
+        _uiState.update { aboutHandler.close(it) }
+    }
+
+    // -------------------------------------------------------------------------
+    // Visuals & Feedback
+    // -------------------------------------------------------------------------
+
+    private fun showMatchLine(path: List<Pair<Int, Int>>, p1: Pair<Int, Int>, p2: Pair<Int, Int>) {
+        matchLineJob?.cancel()
+        matchLineJob = viewModelScope.launch {
+            _uiState.update { it.copy(lastMatchPath = path, lastMatchedPair = p1 to p2) }
+            delay(MATCH_LINE_DURATION_MS)
+            _uiState.update { it.copy(lastMatchPath = null, lastMatchedPair = null) }
         }
     }
 
-    fun autoComplete() {
-        if (!_uiState.value.canFinish || autoCompleteJob?.isActive == true) return
+    private fun resetInactivityTimer() {
         inactivityJob?.cancel()
-        matchLineJob?.cancel()
+        inactivityJob = viewModelScope.launch {
+            delay(INACTIVITY_DELAY_MS)
+            _uiState.update { it.copy(allAvailableHints = emptyList(), currentHintIndex = -1) }
+            getHint()
+        }
+    }
 
+    private fun autoComplete() {
+        autoCompleteJob?.cancel()
         autoCompleteJob = viewModelScope.launch {
-            while (isActive) {
-                val currentBoard = _uiState.value.board
-                val matches = HintFinder.findAllMatches(currentBoard)
-                if (matches.isEmpty()) {
-                    if (engine.isGameOver(currentBoard)) { delay(HANDLE_WIN_ANIMATION_DELAY_MS); handleWin() }
-                    break
-                }
+            while (isActive && _uiState.value.canFinish) {
+                val board = _uiState.value.board
+                val matches = HintFinder.findAllMatches(board)
+                if (matches.isEmpty()) break
 
                 val (p1, p2) = matches.first()
-                val path = PathFinder.getPath(p1, p2, currentBoard) ?: listOf(p1, p2)
+                val path = PathFinder.getPath(p1, p2, board) ?: listOf(p1, p2)
+
                 soundManager.play("tile_match")
                 hapticManager.tileMatch()
                 showMatchLine(path, p1, p2)
 
-                val matchedBoard = engine.attemptMatch(p1, p2, currentBoard) ?: break
-
+                val matchedBoard = engine.attemptMatch(p1, p2, board) ?: break
                 _uiState.update {
                     it.copy(
                         board = matchedBoard,
@@ -382,108 +409,31 @@ class GameViewModel @Inject constructor(
                     )
                 }
 
-                delay(AUTO_COMPLETE_STEP_DELAY_MS)
-                fun autoComplete() {
-                    if (!_uiState.value.canFinish || autoCompleteJob?.isActive == true) return
-                    inactivityJob?.cancel()
-                    matchLineJob?.cancel()
+                delay(AUTO_COMPLETE_DELAY_MS)
+            }
 
-                    autoCompleteJob = viewModelScope.launch {
-                        var lastBoard = _uiState.value.board
+            // Apply gravity once after all matches are done
+            val finalBoard = _uiState.value.board
+            val gravityBoard = engine.applyGravity(finalBoard)
+            if (gravityBoard != finalBoard) {
+                _uiState.update { it.copy(board = gravityBoard) }
+                delay(BOARD_GRAVITY_ANIMATION_DELAY_MS)
+            }
 
-                        while (isActive) {
-                            val currentBoard = _uiState.value.board
-                            val matches = HintFinder.findAllMatches(currentBoard)
-                            if (matches.isEmpty()) {
-                                if (engine.isGameOver(currentBoard)) { delay(HANDLE_WIN_ANIMATION_DELAY_MS); handleWin() }
-                                break
-                            }
-
-                            val (p1, p2) = matches.first()
-                            val path = PathFinder.getPath(p1, p2, currentBoard) ?: listOf(p1, p2)
-                            soundManager.play("tile_match")
-                            hapticManager.tileMatch()
-                            showMatchLine(path, p1, p2)
-
-                            val matchedBoard = engine.attemptMatch(p1, p2, currentBoard) ?: break
-                            lastBoard = matchedBoard
-
-                            _uiState.update {
-                                it.copy(
-                                    board = matchedBoard,
-                                    selectedTile = null,
-                                    allAvailableHints = emptyList(),
-                                    currentHintIndex = -1
-                                )
-                            }
-
-                            delay(AUTO_COMPLETE_STEP_DELAY_MS)
-                        }
-
-                        // Apply gravity once after all tiles are cleared
-                        val gravityBoard = engine.applyGravity(lastBoard)
-                        if (gravityBoard != lastBoard) {
-                            delay(AUTO_COMPLETE_STEP_DELAY_MS)
-                            _uiState.update { it.copy(board = gravityBoard) }
-                        }
-
-                        if (engine.isGameOver(_uiState.value.board)) {
-                            delay(AUTO_COMPLETE_WIN_DELAY_MS)
-                            handleWin()
-                        }
-                    }
-                }
-
-                if (engine.isGameOver(_uiState.value.board)) {
-                    delay(AUTO_COMPLETE_WIN_DELAY_MS)
-                    handleWin()
-                    break
-                }
+            if (isActive && engine.isGameOver(_uiState.value.board)) {
+                delay(HANDLE_WIN_ANIMATION_DELAY_MS)
+                handleWin()
             }
         }
     }
 
-    // -------------------------------------------------------------------------
-    // About screen
-    // -------------------------------------------------------------------------
-
-    fun nextAboutStage() { _uiState.update { aboutHandler.nextStage(it) } }
-    fun previousAboutStage() { _uiState.update { aboutHandler.previousStage(it) } }
-    fun closeAbout() { _uiState.update { aboutHandler.close(it) } }
-    fun onAboutTileClick(index: Int, totalThreshold: Int = 11) {
-        _uiState.update { aboutHandler.onTileClick(it, index, totalThreshold) }
-    }
-
-    // -------------------------------------------------------------------------
-    // Utilities
-    // -------------------------------------------------------------------------
-
-    private fun showMatchLine(path: List<Pair<Int, Int>>, t1: Pair<Int, Int>, t2: Pair<Int, Int>) {
-        _uiState.update { it.copy(lastMatchPath = path, lastMatchedPair = Pair(t1, t2)) }
-        matchLineJob?.cancel()
-        matchLineJob = viewModelScope.launch {
-            delay(MATCH_LINE_DISPLAY_DURATION_MS)
-            _uiState.update { it.copy(lastMatchPath = null, lastMatchedPair = null) }
-        }
-    }
-
-    private fun resetInactivityTimer() {
-        inactivityJob?.cancel()
-        if (_uiState.value.gameState != GameState.PLAYING) return
-        inactivityJob = viewModelScope.launch {
-            delay(HINT_INACTIVITY_DELAY_MS)
-            getHint()
-        }
-    }
-
     companion object {
-        const val HINT_INACTIVITY_DELAY_MS = 10_000L
-        const val AUTO_COMPLETE_STEP_DELAY_MS = 150L
-        const val AUTO_COMPLETE_WIN_DELAY_MS = 300L
-        const val QUOTE_SCREEN_DURATION_MS = 5_000L
-        const val BOARD_GENERATION_MIN_DELAY_MS = 3000L
-        const val BOARD_GRAVITY_ANIMATION_DELAY_MS = 400L
+        const val BOARD_GRAVITY_ANIMATION_DELAY_MS = 100L
         const val HANDLE_WIN_ANIMATION_DELAY_MS = 500L
-        const val MATCH_LINE_DISPLAY_DURATION_MS = 500L
+        private const val MATCH_LINE_DURATION_MS = 300L
+        private const val INACTIVITY_DELAY_MS = 15000L
+        private const val AUTO_COMPLETE_DELAY_MS = 400L
+        private const val BOARD_GENERATION_MIN_DELAY_MS = 600L
+        private const val QUOTE_SCREEN_DURATION_MS = 4000L
     }
 }

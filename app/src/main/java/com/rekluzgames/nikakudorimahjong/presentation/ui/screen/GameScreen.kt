@@ -183,6 +183,7 @@ fun GameScreen(
                 onSelect = { lang ->
                     showLanguageOverlay = false
                     onLanguageChange(lang)
+                    viewModel.refreshQuote()  // ← add this
                 },
                 onClose = { showLanguageOverlay = false }
             )

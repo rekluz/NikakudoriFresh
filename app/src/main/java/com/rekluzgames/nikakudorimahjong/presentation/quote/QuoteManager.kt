@@ -10,12 +10,17 @@ import javax.inject.Singleton
 
 @Singleton
 class QuoteManager @Inject constructor() {
-    private var pool = QuoteProvider.getShuffledQuotes().toMutableList()
+    // Separate pool per language so switching languages mid-session works correctly
+    private val pools = mutableMapOf<String, MutableList<String>>()
 
-    fun next(): String {
-        if (pool.isEmpty()) {
-            pool = QuoteProvider.getShuffledQuotes().toMutableList()
+    fun next(language: String): String {
+        val pool = pools.getOrPut(language) {
+            QuoteProvider.getShuffledQuotes(language)
         }
-        return if (pool.isNotEmpty()) pool.removeAt(0) else "Matching Master!"
+        if (pool.isEmpty()) {
+            pools[language] = QuoteProvider.getShuffledQuotes(language)
+            return pools[language]!!.removeAt(0)
+        }
+        return pool.removeAt(0)
     }
 }

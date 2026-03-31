@@ -20,6 +20,7 @@ class GameRepository @Inject constructor(
     fun isVibrationEnabled() = prefs.isVibrationEnabled()
     fun isMusicEnabled() = prefs.isMusicEnabled()
     fun isFullScreen() = prefs.isFullScreen()
+    fun getLanguage() = prefs.getLanguage()
     fun getGameMode() = prefs.getGameMode()
 
     // Settings writes
@@ -27,6 +28,7 @@ class GameRepository @Inject constructor(
     fun setVibrationEnabled(v: Boolean) = prefs.setVibrationEnabled(v)
     fun setMusicEnabled(v: Boolean) = prefs.setMusicEnabled(v)
     fun setFullScreen(v: Boolean) = prefs.setFullScreen(v)
+    fun setLanguage(lang: String) = prefs.setLanguage(lang)
     fun setGameMode(mode: GameMode) = prefs.setGameMode(mode)
 
     // Scores
