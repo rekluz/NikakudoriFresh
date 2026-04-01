@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2026 Rekluz Games. All rights reserved.
+ * This code and its assets are the exclusive property of Rekluz Games.
+ * Unauthorized copying, distribution, or commercial use is strictly prohibited.
+ */
+
 package com.rekluzgames.nikakudorimahjong.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -8,10 +14,13 @@ import com.rekluzgames.nikakudorimahjong.data.haptic.HapticManager
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.engine.BackgroundManager
 import com.rekluzgames.nikakudorimahjong.domain.engine.GameEngine
+import com.rekluzgames.nikakudorimahjong.domain.engine.LayeredGameEngine
 import com.rekluzgames.nikakudorimahjong.domain.engine.PostMatchProcessor
 import com.rekluzgames.nikakudorimahjong.domain.model.*
 import com.rekluzgames.nikakudorimahjong.domain.rules.BoardGenerator
 import com.rekluzgames.nikakudorimahjong.domain.rules.HintFinder
+import com.rekluzgames.nikakudorimahjong.domain.rules.LayeredBoardGenerator
+import com.rekluzgames.nikakudorimahjong.domain.rules.LayeredHintFinder
 import com.rekluzgames.nikakudorimahjong.domain.rules.PathFinder
 import com.rekluzgames.nikakudorimahjong.presentation.score.ScoreManager
 import com.rekluzgames.nikakudorimahjong.presentation.timer.GameTimer
@@ -28,6 +37,7 @@ class GameViewModel @Inject constructor(
     private val musicManager: MusicManager,
     private val hapticManager: HapticManager,
     private val engine: GameEngine,
+    private val layeredEngine: LayeredGameEngine,
     private val quoteManager: QuoteManager,
     private val scoreManager: ScoreManager,
     private val gameTimer: GameTimer,
@@ -76,12 +86,37 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun applySettingsAndResume(modeChanged: Boolean, acknowledgeModeChange: () -> Unit, currentDifficulty: Difficulty) {
-        if (modeChanged) {
-            startNewGame(currentDifficulty)
-            acknowledgeModeChange()
-        } else {
-            changeState(GameState.PLAYING)
+    fun applySettingsAndResume(
+        modeChanged: Boolean,
+        boardTypeChanged: Boolean,
+        acknowledgeModeChange: () -> Unit,
+        acknowledgeBoardTypeChange: () -> Unit,
+        currentDifficulty: Difficulty,
+        isLayeredMode: Boolean
+    ) {
+        acknowledgeBoardTypeChange()
+
+        when {
+            // Board type switched to 3D → start a layered game
+            boardTypeChanged && isLayeredMode -> {
+                acknowledgeModeChange()
+                startNewLayeredGame(LayeredLayouts.PYRAMID)
+            }
+
+            // Board type switched to 2D → start a fresh flat game
+            boardTypeChanged && !isLayeredMode -> {
+                acknowledgeModeChange()
+                startNewGame(currentDifficulty)
+            }
+
+            // Only the flat game mode (Regular/Gravity) changed
+            modeChanged -> {
+                startNewGame(currentDifficulty)
+                acknowledgeModeChange()
+            }
+
+            // Nothing structural changed — just resume
+            else -> changeState(GameState.PLAYING)
         }
     }
 
@@ -130,7 +165,7 @@ class GameViewModel @Inject constructor(
     }
 
     // -------------------------------------------------------------------------
-    // Core game flow
+    // Core game flow — flat mode
     // -------------------------------------------------------------------------
 
     private fun cancelAllGameLogicJobs() {
@@ -148,6 +183,7 @@ class GameViewModel @Inject constructor(
             it.copy(
                 gameState = GameState.LOADING,
                 difficulty = diff,
+                isLayeredMode = false,
                 undoHistory = emptyList(),
                 selectedTile = null,
                 allAvailableHints = emptyList(),
@@ -185,6 +221,8 @@ class GameViewModel @Inject constructor(
     }
 
     fun retryGame() {
+        if (_uiState.value.isLayeredMode) { retryLayeredGame(); return }
+
         cancelAllGameLogicJobs()
         gameTimer.reset()
 
@@ -231,13 +269,90 @@ class GameViewModel @Inject constructor(
         quoteJob?.cancel()
         _uiState.update { it.copy(playerName = "", gameState = GameState.SCORE_ENTRY) }
     }
+
     fun refreshQuote() {
         _uiState.update {
             it.copy(currentQuote = quoteManager.next(repository.getLanguage()))
         }
     }
+
     // -------------------------------------------------------------------------
-    // Tile interaction
+    // Core game flow — layered mode
+    // -------------------------------------------------------------------------
+
+    fun startNewLayeredGame(layout: LayeredLayout) {
+        cancelAllGameLogicJobs()
+        gameTimer.reset()
+
+        _uiState.update {
+            it.copy(
+                gameState = GameState.LOADING,
+                isLayeredMode = true,
+                currentLayeredLayout = layout,
+                layeredTiles = emptyList(),
+                originalLayeredTiles = emptyList(),
+                selectedLayeredTileId = null,
+                layeredHints = emptyList(),
+                currentLayeredHintIndex = -1,
+                layeredUndoHistory = emptyList(),
+                lastMatchPath = null,
+                lastMatchedPair = null,
+                usedHint = false,
+                usedShuffle = false,
+                lastSavedScore = null,
+                playerName = "",
+                backgroundImageName = backgroundManager.next(it.backgroundImageName),
+                currentQuote = quoteManager.next(repository.getLanguage())
+            )
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            val startTime = System.currentTimeMillis()
+            val tiles = LayeredBoardGenerator.generate(layout)
+            val elapsed = System.currentTimeMillis() - startTime
+            val remaining = BOARD_GENERATION_MIN_DELAY_MS - elapsed
+            if (remaining > 0) delay(remaining)
+
+            _uiState.update {
+                it.copy(
+                    layeredTiles = tiles,
+                    originalLayeredTiles = tiles,
+                    gameState = GameState.PLAYING,
+                    shufflesRemaining = 0
+                )
+            }
+            gameTimer.start(viewModelScope)
+            musicManager.start()
+            resetInactivityTimer()
+        }
+    }
+
+    private fun retryLayeredGame() {
+        cancelAllGameLogicJobs()
+        gameTimer.reset()
+
+        val original = _uiState.value.originalLayeredTiles
+        _uiState.update {
+            it.copy(
+                layeredTiles = original,
+                gameState = GameState.PLAYING,
+                selectedLayeredTileId = null,
+                layeredHints = emptyList(),
+                currentLayeredHintIndex = -1,
+                layeredUndoHistory = emptyList(),
+                lastMatchPath = null,
+                lastMatchedPair = null,
+                usedHint = false,
+                usedShuffle = false,
+                playerName = ""
+            )
+        }
+        gameTimer.start(viewModelScope)
+        resetInactivityTimer()
+    }
+
+    // -------------------------------------------------------------------------
+    // Tile interaction — flat mode
     // -------------------------------------------------------------------------
 
     fun handleTileClick(r: Int, c: Int) {
@@ -271,7 +386,78 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Tile interaction — layered mode
+    // -------------------------------------------------------------------------
+
+    fun handleLayeredTileClick(id: Int) {
+        if (autoCompleteJob?.isActive == true) return
+        resetInactivityTimer()
+
+        val state = _uiState.value
+        val tiles = state.layeredTiles
+        val tapped = tiles.firstOrNull { it.id == id && !it.isRemoved } ?: return
+
+        if (!layeredEngine.isFree(tapped, tiles)) {
+            hapticManager.tileError()
+            soundManager.play("tile_error")
+            return
+        }
+
+        val currentSelection = state.selectedLayeredTileId
+
+        when {
+            currentSelection == id -> {
+                _uiState.update { it.copy(selectedLayeredTileId = null) }
+            }
+            currentSelection == null -> {
+                hapticManager.tileSelect()
+                _uiState.update { it.copy(selectedLayeredTileId = id) }
+            }
+            else -> {
+                val newTiles = layeredEngine.attemptMatch(currentSelection, id, tiles)
+                if (newTiles != null) {
+                    hapticManager.tileMatch()
+                    soundManager.play("tile_match")
+
+                    val snapshot = tiles
+                    _uiState.update {
+                        it.copy(
+                            layeredTiles = newTiles,
+                            selectedLayeredTileId = null,
+                            layeredHints = emptyList(),
+                            currentLayeredHintIndex = -1,
+                            layeredUndoHistory = it.layeredUndoHistory + listOf(snapshot)
+                        )
+                    }
+
+                    viewModelScope.launch {
+                        when {
+                            layeredEngine.isGameOver(newTiles) -> {
+                                delay(HANDLE_WIN_ANIMATION_DELAY_MS)
+                                handleWin()
+                            }
+                            layeredEngine.isStalemate(newTiles) -> {
+                                changeState(GameState.NO_MOVES)
+                                hapticManager.noMoves()
+                            }
+                        }
+                    }
+                } else {
+                    hapticManager.tileSelect()
+                    _uiState.update { it.copy(selectedLayeredTileId = id) }
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Hint
+    // -------------------------------------------------------------------------
+
     fun getHint() {
+        if (_uiState.value.isLayeredMode) { getLayeredHint(); return }
+
         val state = _uiState.value
         if (state.gameState != GameState.PLAYING) return
         if (state.canFinish) { autoComplete(); return }
@@ -293,10 +479,42 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    private fun getLayeredHint() {
+        val state = _uiState.value
+        if (state.gameState != GameState.PLAYING) return
+        if (state.canFinish) { autoCompleteLayered(); return }
+
+        _uiState.update { it.copy(usedHint = true) }
+
+        if (state.layeredHints.isEmpty()) {
+            val hints = LayeredHintFinder.findAllMatches(state.layeredTiles, layeredEngine)
+            if (hints.isNotEmpty()) {
+                _uiState.update { it.copy(layeredHints = hints, currentLayeredHintIndex = 0) }
+            } else {
+                changeState(GameState.NO_MOVES)
+                hapticManager.noMoves()
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    currentLayeredHintIndex =
+                        (it.currentLayeredHintIndex + 1) % it.layeredHints.size
+                )
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Undo
+    // -------------------------------------------------------------------------
+
     fun undo() {
+        if (_uiState.value.isLayeredMode) { undoLayered(); return }
+
         val state = _uiState.value
         if (state.undoHistory.isEmpty() || autoCompleteJob?.isActive == true) return
 
+        // Ensure we treat the board from history as the correct 2D type
         val previousBoard = state.undoHistory.last()
         _uiState.update {
             it.copy(
@@ -320,7 +538,30 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    private fun undoLayered() {
+        val state = _uiState.value
+        if (state.layeredUndoHistory.isEmpty() || autoCompleteJob?.isActive == true) return
+
+        val previous = state.layeredUndoHistory.last()
+        _uiState.update {
+            it.copy(
+                layeredTiles = previous,
+                layeredUndoHistory = it.layeredUndoHistory.dropLast(1),
+                selectedLayeredTileId = null,
+                layeredHints = emptyList(),
+                currentLayeredHintIndex = -1
+            )
+        }
+        resetInactivityTimer()
+    }
+
+    // -------------------------------------------------------------------------
+    // Shuffle
+    // -------------------------------------------------------------------------
+
     fun shuffle() {
+        if (_uiState.value.isLayeredMode) return
+
         val state = _uiState.value
         if (state.shufflesRemaining <= 0 || autoCompleteJob?.isActive == true) return
 
@@ -412,7 +653,6 @@ class GameViewModel @Inject constructor(
                 delay(AUTO_COMPLETE_DELAY_MS)
             }
 
-            // Apply gravity once after all matches are done
             val finalBoard = _uiState.value.board
             val gravityBoard = engine.applyGravity(finalBoard)
             if (gravityBoard != finalBoard) {
@@ -421,6 +661,39 @@ class GameViewModel @Inject constructor(
             }
 
             if (isActive && engine.isGameOver(_uiState.value.board)) {
+                delay(HANDLE_WIN_ANIMATION_DELAY_MS)
+                handleWin()
+            }
+        }
+    }
+
+    private fun autoCompleteLayered() {
+        autoCompleteJob?.cancel()
+        autoCompleteJob = viewModelScope.launch {
+            while (isActive && _uiState.value.canFinish) {
+                val tiles = _uiState.value.layeredTiles
+                val matches = LayeredHintFinder.findAllMatches(tiles, layeredEngine)
+                if (matches.isEmpty()) break
+
+                val (id1, id2) = matches.first()
+                val newTiles = layeredEngine.attemptMatch(id1, id2, tiles) ?: break
+
+                soundManager.play("tile_match")
+                hapticManager.tileMatch()
+
+                _uiState.update {
+                    it.copy(
+                        layeredTiles = newTiles,
+                        selectedLayeredTileId = null,
+                        layeredHints = emptyList(),
+                        currentLayeredHintIndex = -1
+                    )
+                }
+
+                delay(AUTO_COMPLETE_DELAY_MS)
+            }
+
+            if (isActive && layeredEngine.isGameOver(_uiState.value.layeredTiles)) {
                 delay(HANDLE_WIN_ANIMATION_DELAY_MS)
                 handleWin()
             }

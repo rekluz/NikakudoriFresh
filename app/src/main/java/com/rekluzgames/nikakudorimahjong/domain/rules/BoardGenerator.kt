@@ -9,26 +9,26 @@ object BoardGenerator {
 
     private const val MAX_ATTEMPTS = 15
     private const val TOTAL_TILE_TYPES = 34
-    
+
     private val random = Random.Default
 
-    fun createBoard(difficulty: Difficulty): List<List<Tile>> {
+    fun createBoard(diff: Difficulty): List<List<Tile>> {
         repeat(MAX_ATTEMPTS) {
-            val candidate = tryBackwardGeneration(difficulty)
+            val candidate = tryBackwardGeneration(diff)
             if (candidate != null && isBoardFullySolvable(candidate)) {
                 return candidate
             }
         }
-        return fallbackGeneration(difficulty)
+        return fallbackGeneration(diff)
     }
 
     private fun generateTypePool(totalTiles: Int): IntArray {
         val pool = IntArray(totalTiles)
         var index = 0
-        
+
         var availableTypes = (0 until TOTAL_TILE_TYPES).shuffled(random)
         var typeIdx = 0
-        
+
         fun getNextType(): Int {
             if (typeIdx >= availableTypes.size) {
                 availableTypes = (0 until TOTAL_TILE_TYPES).shuffled(random)
@@ -50,13 +50,6 @@ object BoardGenerator {
         return pool
     }
 
-    /**
-     * Attempts to generate a solvable board by working backwards.
-     * It starts with a completely filled, but "removed/empty" board.
-     * It iteratively places pairs of tiles in locations that can legally connect
-     * across the currently empty spaces. Once all tiles are placed, 
-     * the sequence in reverse guarantees a valid winning path.
-     */
     private fun tryBackwardGeneration(difficulty: Difficulty): List<List<Tile>>? {
         val rows = difficulty.rows
         val cols = difficulty.cols

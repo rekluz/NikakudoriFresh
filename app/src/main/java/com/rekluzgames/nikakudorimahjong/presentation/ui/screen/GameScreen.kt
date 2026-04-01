@@ -64,9 +64,10 @@ fun GameScreen(
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
+                // 1. GAME BOARD AREA (Left Side)
                 Box(
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(1f) // Pushes the menu to the right
                         .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
@@ -82,11 +83,17 @@ fun GameScreen(
                         )
                     }
 
-                    BoardGrid(uiState) { r, c -> viewModel.handleTileClick(r, c) }
+                    BoardGrid(
+                        uiState = uiState,
+                        onTileClick = { r, c -> viewModel.handleTileClick(r, c) },
+                        onLayeredTileClick = { id -> viewModel.handleLayeredTileClick(id) }
+                    )
                 }
 
+                // 2. SIDE MENU (Right Side)
                 Column(
                     modifier = Modifier
+                        .padding(start = 8.dp) // Space between board and menu
                         .width(125.dp)
                         .fillMaxHeight()
                         .background(Color(0x99000000), RoundedCornerShape(16.dp))
@@ -107,7 +114,10 @@ fun GameScreen(
                     MenuPillButton(text = hText, color = hColor) { viewModel.getHint() }
 
                     MenuPillButton(
-                        text = stringResource(R.string.btn_shuffle_format, uiState.shufflesRemaining),
+                        text = stringResource(
+                            R.string.btn_shuffle_format,
+                            uiState.shufflesRemaining
+                        ),
                         enabled = uiState.shufflesRemaining > 0,
                         color = Color(0xFF708090)
                     ) { viewModel.shuffle() }
@@ -144,7 +154,10 @@ fun GameScreen(
 
                     if (uiState.remainingTilesCount > 0) {
                         Text(
-                            text = stringResource(R.string.remaining_tiles_format, uiState.remainingTilesCount),
+                            text = stringResource(
+                                R.string.remaining_tiles_format,
+                                uiState.remainingTilesCount
+                            ),
                             color = Color.White.copy(alpha = 0.4f),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
@@ -153,40 +166,37 @@ fun GameScreen(
                     TimerDisplay(viewModel = viewModel)
                 }
             }
-        }
 
-        // Overlays
-        when (uiState.gameState) {
-            GameState.PAUSED      -> PauseOverlay(viewModel) { (context as? Activity)?.finish() }
-            GameState.BOARDS      -> BoardsOverlay(viewModel)
-            GameState.OPTIONS     -> SettingsOverlay(viewModel, settingsViewModel)
-            GameState.ABOUT       -> AboutScreen(viewModel)
-            GameState.SCORE_ENTRY -> ScoreEntryOverlay(viewModel)
-            GameState.SCORE       -> ScoreboardOverlay(viewModel)
-            GameState.NO_MOVES    -> StalemateOverlay(viewModel)
-            GameState.QUOTE       -> QuoteOverlay(viewModel)
-            else -> {}
-        }
+            // Overlays
+            when (uiState.gameState) {
+                GameState.PAUSED -> PauseOverlay(viewModel) { (context as? Activity)?.finish() }
+                GameState.BOARDS -> BoardsOverlay(viewModel)
+                GameState.OPTIONS -> SettingsOverlay(viewModel, settingsViewModel)
+                GameState.ABOUT -> AboutScreen(viewModel)
+                GameState.SCORE_ENTRY -> ScoreEntryOverlay(viewModel)
+                GameState.SCORE -> ScoreboardOverlay(viewModel)
+                GameState.NO_MOVES -> StalemateOverlay(viewModel)
+                GameState.QUOTE -> QuoteOverlay(viewModel)
+                else -> {}
+            }
 
-        // ── CHANGED: selectionPositions replaces selectionPos.
-        //    This top-level overlay handles only the victory storm;
-        //    match bursts are fired by the BoardGrid's own ParticleOverlay.
-        ParticleOverlay(
-            triggerVictoryStorm = uiState.gameState == GameState.WON ||
-                    uiState.gameState == GameState.SCORE_ENTRY,
-            selectionPositions = emptyList(),
-            isScoreEntryActive = uiState.gameState == GameState.SCORE_ENTRY
-        )
-
-        if (showLanguageOverlay) {
-            LanguageOverlay(
-                onSelect = { lang ->
-                    showLanguageOverlay = false
-                    onLanguageChange(lang)
-                    viewModel.refreshQuote()  // ← add this
-                },
-                onClose = { showLanguageOverlay = false }
+            ParticleOverlay(
+                triggerVictoryStorm = uiState.gameState == GameState.WON ||
+                        uiState.gameState == GameState.SCORE_ENTRY,
+                selectionPositions = emptyList(),
+                isScoreEntryActive = uiState.gameState == GameState.SCORE_ENTRY
             )
+
+            if (showLanguageOverlay) {
+                LanguageOverlay(
+                    onSelect = { lang ->
+                        showLanguageOverlay = false
+                        onLanguageChange(lang)
+                        viewModel.refreshQuote()
+                    },
+                    onClose = { showLanguageOverlay = false }
+                )
+            }
         }
     }
 }

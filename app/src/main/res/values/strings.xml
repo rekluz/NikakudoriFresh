@@ -55,6 +55,7 @@
     <string name="status_on">ON</string>
     <string name="status_off">OFF</string>
     <string name="setting_screen">SCREEN</string>
+    <string name="setting_board">Board</string>
     <string name="screen_full">FULL</string>
     <string name="screen_normal">NORMAL</string>
     <string name="setting_scores">SCORES</string>

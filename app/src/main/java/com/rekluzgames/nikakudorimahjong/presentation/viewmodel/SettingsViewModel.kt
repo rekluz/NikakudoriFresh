@@ -21,7 +21,8 @@ data class SettingsUIState(
     val isMusicEnabled: Boolean = true,
     val isFullScreen: Boolean = false,
     val gameMode: GameMode = GameMode.REGULAR,
-    val version: String = ""
+    val version: String = "",
+    val isLayeredMode: Boolean = false   // ← new
 )
 
 @HiltViewModel
@@ -36,6 +37,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _modeWasChanged = MutableStateFlow(false)
     val modeWasChanged = _modeWasChanged.asStateFlow()
+
+    private val _boardTypeWasChanged = MutableStateFlow(false)  // ← new
+    val boardTypeWasChanged = _boardTypeWasChanged.asStateFlow()
 
     init {
         loadSettings()
@@ -58,6 +62,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setVersion(v: String) {
         _uiState.update { it.copy(version = v) }
+    }
+
+    fun syncLayeredMode(isLayered: Boolean) {          // ← new: called when overlay opens
+        _uiState.update { it.copy(isLayeredMode = isLayered) }
     }
 
     fun updateSoundEnabled(enabled: Boolean) {
@@ -85,13 +93,24 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun toggleGameMode() {
-        val newMode = if (_uiState.value.gameMode == GameMode.REGULAR) GameMode.GRAVITY else GameMode.REGULAR
+        val newMode = if (_uiState.value.gameMode == GameMode.REGULAR)
+            GameMode.GRAVITY else GameMode.REGULAR
         repository.setGameMode(newMode)
         _uiState.update { it.copy(gameMode = newMode) }
         _modeWasChanged.value = true
     }
 
+    fun toggleBoardType() {                            // ← new
+        val next = !_uiState.value.isLayeredMode
+        _uiState.update { it.copy(isLayeredMode = next) }
+        _boardTypeWasChanged.value = true
+    }
+
     fun acknowledgeModeChange() {
         _modeWasChanged.value = false
+    }
+
+    fun acknowledgeBoardTypeChange() {                 // ← new
+        _boardTypeWasChanged.value = false
     }
 }
