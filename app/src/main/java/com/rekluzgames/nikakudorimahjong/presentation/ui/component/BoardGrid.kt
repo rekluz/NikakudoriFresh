@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
- * This code and its assets are the exclusive property of Rekluz Games.
- * Unauthorized copying, distribution, or commercial use is strictly prohibited.
  */
 
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -32,10 +29,6 @@ import com.rekluzgames.nikakudorimahjong.presentation.effects.ParticleOverlay
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameUIState
 import kotlin.math.abs
 
-// =============================================================================
-// Entry point — branches on game mode
-// =============================================================================
-
 @Composable
 fun BoardGrid(
     uiState: GameUIState,
@@ -47,10 +40,6 @@ fun BoardGrid(
         return
     }
 
-    // =========================================================================
-    // Flat board — unchanged
-    // =========================================================================
-
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -58,7 +47,6 @@ fun BoardGrid(
         contentAlignment = Alignment.Center
     ) {
         val density = LocalDensity.current
-
         val availableWidth  = maxWidth.value
         val availableHeight = maxHeight.value
 
@@ -137,6 +125,7 @@ fun BoardGrid(
                                 isSelected  = uiState.selectedTile == r to c,
                                 isHinted    = isHint,
                                 isExploding = isExploding,
+                                isBlocked   = false,
                                 width       = tileWidth,
                                 height      = tileHeight,
                                 xOffset     = xStep * c,
@@ -220,10 +209,6 @@ fun BoardGrid(
     }
 }
 
-// =============================================================================
-// Layered board rendering
-// =============================================================================
-
 @Composable
 private fun LayeredBoardGrid(
     uiState: GameUIState,
@@ -293,25 +278,22 @@ private fun LayeredBoardGrid(
         Box(modifier = Modifier.size(width = gridWidth.dp, height = gridHeight.dp)) {
             tiles
                 .filter { !it.isRemoved }
-                .sortedWith(compareBy({ it.layer }, { it.row }, { it.col }))
+                .sortedBy { it.layer }
                 .forEach { tile ->
                     key(tile.id) {
                         val xOffset = tile.col * halfStep  + tile.layer              * layerOffsetX
-                        val yOffset = tile.row * halfStepH + (maxLayer - tile.layer) * layerOffsetY
+                        val yOffset = tile.row * halfStepH + tile.layer * layerOffsetY
 
                         val isFree     = tile.id in freeTileIds
+                        val isBlocked  = !isFree
                         val isSelected = uiState.selectedLayeredTileId == tile.id
                         val isHinted   = uiState.activeLayeredHint?.let {
                             it.first == tile.id || it.second == tile.id
                         } ?: false
 
-                        val zIndex = tile.layer * 10_000f + tile.row * 10f + tile.col
+                        val zIndex = tile.layer.toFloat()
 
-                        Box(
-                            modifier = Modifier
-                                .zIndex(zIndex)
-                                .alpha(if (isFree) 1f else 0.4f)
-                        ) {
+                        Box(modifier = Modifier.zIndex(zIndex)) {
                             TileView(
                                 tile = Tile(
                                     id        = tile.id,
@@ -321,6 +303,7 @@ private fun LayeredBoardGrid(
                                 isSelected  = isSelected,
                                 isHinted    = isHinted,
                                 isExploding = false,
+                                isBlocked   = isBlocked,
                                 width       = tileWidth,
                                 height      = tileHeight,
                                 xOffset     = xOffset,

@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2026 Rekluz Games. All rights reserved.
- * This code and its assets are the exclusive property of Rekluz Games.
- * Unauthorized copying, distribution, or commercial use is strictly prohibited.
  */
 
 package com.rekluzgames.nikakudorimahjong.presentation.ui.component
@@ -32,6 +30,7 @@ fun TileView(
     isSelected: Boolean,
     isHinted: Boolean,
     isExploding: Boolean,
+    isBlocked: Boolean, // <--- New Parameter
     width: Float,
     height: Float,
     xOffset: Float,
@@ -39,15 +38,10 @@ fun TileView(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-
-    // -------------------------------------------------------------------------
-    // 3D DEPTH ADJUSTMENT (TWEAK THESE VALUES)
-    // -------------------------------------------------------------------------
     val depthRight = 4.5.dp
     val depthBottom = 4.dp
     val borderThickness = 2.dp
 
-    // Smooth gravity movement
     val animatedX by animateFloatAsState(
         targetValue = xOffset,
         animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
@@ -59,7 +53,6 @@ fun TileView(
         label = "slideY"
     )
 
-    // Pulsing glow for hint
     val infiniteTransition = rememberInfiniteTransition(label = "glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.5f,
@@ -70,27 +63,23 @@ fun TileView(
         ), label = "alpha"
     )
 
-    // 1. Calculate the target scale: 1.2f stretch for explosion, 1.1f pop for selection
     val targetScale = when {
-        isExploding -> 1.2f  // Pre-burst implosion stretch (150ms window)
-        //  isSelected -> 1.1f   // Tactile selection pop (NO TILT)
-        else -> 1.0f         // Normal state
+        isExploding -> 1.2f
+        else -> 1.0f
     }
 
-    // Animate scale: Use a bouncy spring for selection, and a smooth tween for the explosion.
     val animatedScale by animateFloatAsState(
         targetValue = targetScale,
         animationSpec = if (isExploding) tween(durationMillis = 150) else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "scale"
     )
 
-    // 2. Shrink to absolutely nothing starting exactly at 150ms (The Implosion)
     AnimatedVisibility(
         visible = !tile.isRemoved,
         enter = fadeIn(),
         exit = scaleOut(
             animationSpec = tween(durationMillis = 100, delayMillis = 150, easing = FastOutLinearInEasing),
-            targetScale = 0.0f // Shrink to 0 violently
+            targetScale = 0.0f
         ) + fadeOut(
             animationSpec = tween(durationMillis = 100, delayMillis = 150)
         )
@@ -103,7 +92,6 @@ fun TileView(
                 .graphicsLayer {
                     scaleX = animatedScale
                     scaleY = animatedScale
-                    // NO rotationZ applied here, so the tile stays straight!
                 }
                 .clickable { onClick() },
             contentAlignment = Alignment.TopStart
@@ -121,7 +109,16 @@ fun TileView(
                 )
             }
 
-            // SELECTION OVERLAY
+            // BLOCKED OVERLAY
+            if (isBlocked) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(end = depthRight, bottom = depthBottom)
+                        .background(Color.Black.copy(alpha = 0.35f))
+                )
+            }
+
             // SELECTION OVERLAY
             if (isSelected) {
                 Box(
@@ -132,7 +129,6 @@ fun TileView(
                         .background(Color(0xFF00BFFF).copy(alpha = glowAlpha * 0.4f))
                 )
             }
-
 
             // HINT OVERLAY
             if (isHinted) {
