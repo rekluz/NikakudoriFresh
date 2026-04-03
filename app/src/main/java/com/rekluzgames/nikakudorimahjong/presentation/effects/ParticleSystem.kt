@@ -134,8 +134,8 @@ fun ParticleOverlay(
                 PetalParticle(
                     x = (Math.random().toFloat() * (canvasSize.width + 200f)) - 100f,
                     y = -50f,
-                    vx = (Math.random().toFloat() * 1.2f - 0.6f),
-                    vy = (Math.random().toFloat() * 2f + 2f),
+                    vx = Math.random().toFloat() * 1.2f - 0.6f,
+                    vy = Math.random().toFloat() * 2f + 2f,
                     rotation = Math.random().toFloat() * 360f,
                     rotationSpeed = Math.random().toFloat() * 4f - 2f,
                     alpha = 1f,

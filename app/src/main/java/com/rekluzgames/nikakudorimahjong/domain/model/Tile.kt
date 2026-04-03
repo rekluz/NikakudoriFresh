@@ -9,8 +9,8 @@ package com.rekluzgames.nikakudorimahjong.domain.model
 data class Tile(val id: Int, val type: Int, val isRemoved: Boolean = false) {
     val imageName: String get() = when (type) {
         in 0..8 -> "tile_dot_${type + 1}"
-        in 9..17 -> "tile_bamboo_${(type - 9) + 1}"
-        in 18..26 -> "tile_char_${(type - 18) + 1}"
+        in 9..17 -> "tile_bamboo_${type - 9 + 1}"
+        in 18..26 -> "tile_char_${type - 18 + 1}"
         27 -> "tile_wind_e"
         28 -> "tile_wind_s"
         29 -> "tile_wind_w"

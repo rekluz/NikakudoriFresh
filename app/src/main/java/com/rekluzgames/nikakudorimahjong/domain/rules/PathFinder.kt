@@ -36,19 +36,19 @@ object PathFinder {
         if (board[r1][c1].type != board[r2][c2].type) return null
 
         // Straight
-        if (lineClear(r1, c1, r2, c2, board)) {
+        if (lineClearBoard(r1, c1, r2, c2, board)) {
             return listOf(p1, p2)
         }
 
         // 1 turn
         if (isPassable(r1, c2, board) &&
-            lineClear(r1, c1, r1, c2, board) &&
-            lineClear(r1, c2, r2, c2, board)
+            lineClearBoard(r1, c1, r1, c2, board) &&
+            lineClearBoard(r1, c2, r2, c2, board)
         ) return listOf(p1, Pair(r1, c2), p2)
 
         if (isPassable(r2, c1, board) &&
-            lineClear(r1, c1, r2, c1, board) &&
-            lineClear(r2, c1, r2, c2, board)
+            lineClearBoard(r1, c1, r2, c1, board) &&
+            lineClearBoard(r2, c1, r2, c2, board)
         ) return listOf(p1, Pair(r2, c1), p2)
 
         val rows = board.size
@@ -58,9 +58,9 @@ object PathFinder {
         for (r in -1..rows) {
             if (isPassable(r, c1, board) &&
                 isPassable(r, c2, board) &&
-                lineClear(r1, c1, r, c1, board) &&
-                lineClear(r, c1, r, c2, board) &&
-                lineClear(r, c2, r2, c2, board)
+                lineClearBoard(r1, c1, r, c1, board) &&
+                lineClearBoard(r, c1, r, c2, board) &&
+                lineClearBoard(r, c2, r2, c2, board)
             ) {
                 return listOf(p1, Pair(r, c1), Pair(r, c2), p2)
             }
@@ -70,9 +70,9 @@ object PathFinder {
         for (c in -1..cols) {
             if (isPassable(r1, c, board) &&
                 isPassable(r2, c, board) &&
-                lineClear(r1, c1, r1, c, board) &&
-                lineClear(r1, c, r2, c, board) &&
-                lineClear(r2, c, r2, c2, board)
+                lineClearBoard(r1, c1, r1, c, board) &&
+                lineClearBoard(r1, c, r2, c, board) &&
+                lineClearBoard(r2, c, r2, c2, board)
             ) {
                 return listOf(p1, Pair(r1, c), Pair(r2, c), p2)
             }
@@ -99,38 +99,24 @@ object PathFinder {
             return board[r * cols + c] == -1
         }
 
-        fun lineClear(r1: Int, c1: Int, r2: Int, c2: Int): Boolean {
-            if (r1 == r2) {
-                val (s, e) = if (c1 < c2) c1 to c2 else c2 to c1
-                for (c in s + 1 until e) if (!isFree(r1, c)) return false
-                return true
-            }
-            if (c1 == c2) {
-                val (s, e) = if (r1 < r2) r1 to r2 else r2 to r1
-                for (r in s + 1 until e) if (!isFree(r, c1)) return false
-                return true
-            }
-            return false
-        }
+        if (lineClear(r1, c1, r2, c2, rows, cols, ::isFree)) return true
 
-        if (lineClear(r1, c1, r2, c2)) return true
-
-        if (isFree(r1, c2) && lineClear(r1, c1, r1, c2) && lineClear(r1, c2, r2, c2)) return true
-        if (isFree(r2, c1) && lineClear(r1, c1, r2, c1) && lineClear(r2, c1, r2, c2)) return true
+        if (isFree(r1, c2) && lineClear(r1, c1, r1, c2, rows, cols, ::isFree) && lineClear(r1, c2, r2, c2, rows, cols, ::isFree)) return true
+        if (isFree(r2, c1) && lineClear(r1, c1, r2, c1, rows, cols, ::isFree) && lineClear(r2, c1, r2, c2, rows, cols, ::isFree)) return true
 
         for (r in -1..rows) {
             if (isFree(r, c1) && isFree(r, c2) &&
-                lineClear(r1, c1, r, c1) &&
-                lineClear(r, c1, r, c2) &&
-                lineClear(r, c2, r2, c2)
+                lineClear(r1, c1, r, c1, rows, cols, ::isFree) &&
+                lineClear(r, c1, r, c2, rows, cols, ::isFree) &&
+                lineClear(r, c2, r2, c2, rows, cols, ::isFree)
             ) return true
         }
 
         for (c in -1..cols) {
             if (isFree(r1, c) && isFree(r2, c) &&
-                lineClear(r1, c1, r1, c) &&
-                lineClear(r1, c, r2, c) &&
-                lineClear(r2, c, r2, c2)
+                lineClear(r1, c1, r1, c, rows, cols, ::isFree) &&
+                lineClear(r1, c, r2, c, rows, cols, ::isFree) &&
+                lineClear(r2, c, r2, c2, rows, cols, ::isFree)
             ) return true
         }
 
@@ -150,38 +136,24 @@ object PathFinder {
             return removed.get(r * cols + c)
         }
 
-        fun lineClear(r1: Int, c1: Int, r2: Int, c2: Int): Boolean {
-            if (r1 == r2) {
-                val (s, e) = if (c1 < c2) c1 to c2 else c2 to c1
-                for (c in s + 1 until e) if (!isFree(r1, c)) return false
-                return true
-            }
-            if (c1 == c2) {
-                val (s, e) = if (r1 < r2) r1 to r2 else r2 to r1
-                for (r in s + 1 until e) if (!isFree(r, c1)) return false
-                return true
-            }
-            return false
-        }
+        if (lineClear(r1, c1, r2, c2, rows, cols, ::isFree)) return true
 
-        if (lineClear(r1, c1, r2, c2)) return true
-
-        if (isFree(r1, c2) && lineClear(r1, c1, r1, c2) && lineClear(r1, c2, r2, c2)) return true
-        if (isFree(r2, c1) && lineClear(r1, c1, r2, c1) && lineClear(r2, c1, r2, c2)) return true
+        if (isFree(r1, c2) && lineClear(r1, c1, r1, c2, rows, cols, ::isFree) && lineClear(r1, c2, r2, c2, rows, cols, ::isFree)) return true
+        if (isFree(r2, c1) && lineClear(r1, c1, r2, c1, rows, cols, ::isFree) && lineClear(r2, c1, r2, c2, rows, cols, ::isFree)) return true
 
         for (r in -1..rows) {
             if (isFree(r, c1) && isFree(r, c2) &&
-                lineClear(r1, c1, r, c1) &&
-                lineClear(r, c1, r, c2) &&
-                lineClear(r, c2, r2, c2)
+                lineClear(r1, c1, r, c1, rows, cols, ::isFree) &&
+                lineClear(r, c1, r, c2, rows, cols, ::isFree) &&
+                lineClear(r, c2, r2, c2, rows, cols, ::isFree)
             ) return true
         }
 
         for (c in -1..cols) {
             if (isFree(r1, c) && isFree(r2, c) &&
-                lineClear(r1, c1, r1, c) &&
-                lineClear(r1, c, r2, c) &&
-                lineClear(r2, c, r2, c2)
+                lineClear(r1, c1, r1, c, rows, cols, ::isFree) &&
+                lineClear(r1, c, r2, c, rows, cols, ::isFree) &&
+                lineClear(r2, c, r2, c2, rows, cols, ::isFree)
             ) return true
         }
 
@@ -198,16 +170,16 @@ object PathFinder {
         board: List<List<Tile>>
     ): Boolean {
 
-        if (lineClear(r1, c1, r2, c2, board)) return true
+        if (lineClearBoard(r1, c1, r2, c2, board)) return true
 
         if (isPassable(r1, c2, board) &&
-            lineClear(r1, c1, r1, c2, board) &&
-            lineClear(r1, c2, r2, c2, board)
+            lineClearBoard(r1, c1, r1, c2, board) &&
+            lineClearBoard(r1, c2, r2, c2, board)
         ) return true
 
         if (isPassable(r2, c1, board) &&
-            lineClear(r1, c1, r2, c1, board) &&
-            lineClear(r2, c1, r2, c2, board)
+            lineClearBoard(r1, c1, r2, c1, board) &&
+            lineClearBoard(r2, c1, r2, c2, board)
         ) return true
 
         val rows = board.size
@@ -216,18 +188,18 @@ object PathFinder {
         for (r in -1..rows) {
             if (isPassable(r, c1, board) &&
                 isPassable(r, c2, board) &&
-                lineClear(r1, c1, r, c1, board) &&
-                lineClear(r, c1, r, c2, board) &&
-                lineClear(r, c2, r2, c2, board)
+                lineClearBoard(r1, c1, r, c1, board) &&
+                lineClearBoard(r, c1, r, c2, board) &&
+                lineClearBoard(r, c2, r2, c2, board)
             ) return true
         }
 
         for (c in -1..cols) {
             if (isPassable(r1, c, board) &&
                 isPassable(r2, c, board) &&
-                lineClear(r1, c1, r1, c, board) &&
-                lineClear(r1, c, r2, c, board) &&
-                lineClear(r2, c, r2, c2, board)
+                lineClearBoard(r1, c1, r1, c, board) &&
+                lineClearBoard(r1, c, r2, c, board) &&
+                lineClearBoard(r2, c, r2, c2, board)
             ) return true
         }
 
@@ -239,7 +211,31 @@ object PathFinder {
         return board[r][c].isRemoved
     }
 
+    // =========================
+    // GENERIC lineClear (DRY)
+    // =========================
+
     private fun lineClear(
+        r1: Int, c1: Int,
+        r2: Int, c2: Int,
+        rows: Int,
+        cols: Int,
+        isFree: (Int, Int) -> Boolean
+    ): Boolean {
+        if (r1 == r2) {
+            val (s, e) = if (c1 < c2) c1 to c2 else c2 to c1
+            for (c in s + 1 until e) if (!isFree(r1, c)) return false
+            return true
+        }
+        if (c1 == c2) {
+            val (s, e) = if (r1 < r2) r1 to r2 else r2 to r1
+            for (r in s + 1 until e) if (!isFree(r, c1)) return false
+            return true
+        }
+        return false
+    }
+
+    private fun lineClearBoard(
         r1: Int, c1: Int,
         r2: Int, c2: Int,
         board: List<List<Tile>>
