@@ -27,6 +27,7 @@ import com.rekluzgames.nikakudorimahjong.presentation.timer.GameTimer
 import com.rekluzgames.nikakudorimahjong.presentation.ui.component.AboutInteractionHandler
 import com.rekluzgames.nikakudorimahjong.presentation.ui.component.TileInteractionHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import android.util.Log
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -138,8 +139,11 @@ class GameViewModel @Inject constructor(
 
     fun selectScoreTab(tab: String) { _uiState.update { it.copy(selectedScoreTab = tab) } }
     fun clearLastSavedScore() { _uiState.update { it.copy(lastSavedScore = null) } }
-    fun updatePlayerName(name: String) { _uiState.update { it.copy(playerName = name) } }
+    fun updatePlayerName(name: String) {
+        val sanitized = name.trim().take(3)
+        _uiState.update { it.copy(playerName = sanitized) }
 
+    }
     fun clearScores(diffLabel: String) {
         scoreManager.clearScores(diffLabel)
         _uiState.update { it.copy(highScores = scoreManager.getAllHighScores()) }
@@ -147,6 +151,7 @@ class GameViewModel @Inject constructor(
 
     fun saveScoreAndShowBoard() {
         val state = _uiState.value
+        val name = state.playerName.take(3).ifBlank { "???" }
         val newScore = scoreManager.processWin(
             playerName = state.playerName,
             timeSeconds = gameTimer.timeSeconds.value,
@@ -318,7 +323,7 @@ class GameViewModel @Inject constructor(
                     layeredTiles = tiles,
                     originalLayeredTiles = tiles,
                     gameState = GameState.PLAYING,
-                    shufflesRemaining = 0
+                    shufflesRemaining = 5
                 )
             }
             gameTimer.start(viewModelScope)
@@ -344,6 +349,7 @@ class GameViewModel @Inject constructor(
                 lastMatchedPair = null,
                 usedHint = false,
                 usedShuffle = false,
+                shufflesRemaining = 5,
                 playerName = ""
             )
         }
@@ -560,10 +566,16 @@ class GameViewModel @Inject constructor(
     // -------------------------------------------------------------------------
 
     fun shuffle() {
-        if (_uiState.value.isLayeredMode) return
+        Log.d("GameViewModel", "shuffle() called, isLayeredMode=${_uiState.value.isLayeredMode}, shufflesRemaining=${_uiState.value.shufflesRemaining}")
+        
+        if (_uiState.value.isLayeredMode) {
+            shuffleLayered()
+            return
+        }
 
         val state = _uiState.value
-        if (state.shufflesRemaining <= 0 || autoCompleteJob?.isActive == true) return
+        if (state.shufflesRemaining <= 0) return
+        if (autoCompleteJob?.isActive == true) return
 
         val activeTiles = state.board.flatten().filter { !it.isRemoved }
         if (activeTiles.isEmpty()) return
@@ -584,6 +596,36 @@ class GameViewModel @Inject constructor(
                 selectedTile = null,
                 allAvailableHints = emptyList(),
                 currentHintIndex = -1
+            )
+        }
+        soundManager.play("shuffle")
+        hapticManager.shuffle()
+        resetInactivityTimer()
+    }
+
+    private fun shuffleLayered() {
+        Log.d("GameViewModel", "shuffleLayered() called, activeTiles count=${_uiState.value.layeredTiles.count { !it.isRemoved }}")
+        
+        val state = _uiState.value
+        if (state.shufflesRemaining <= 0) return
+
+        val activeTiles = state.layeredTiles.filter { !it.isRemoved }
+        if (activeTiles.isEmpty()) return
+
+        val shuffledTiles = activeTiles.shuffled()
+        var index = 0
+        val newLayeredTiles = state.layeredTiles.map { tile ->
+            if (tile.isRemoved) tile else shuffledTiles[index++]
+        }
+
+        _uiState.update {
+            it.copy(
+                layeredTiles = newLayeredTiles,
+                shufflesRemaining = it.shufflesRemaining - 1,
+                usedShuffle = true,
+                selectedLayeredTileId = null,
+                layeredHints = emptyList(),
+                currentLayeredHintIndex = -1
             )
         }
         soundManager.play("shuffle")

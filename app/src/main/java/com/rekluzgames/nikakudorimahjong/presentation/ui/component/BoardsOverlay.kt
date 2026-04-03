@@ -41,7 +41,7 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "2D Boards",
+                        text = stringResource(R.string.boards_2d),
                         color = Color.White.copy(alpha = 0.6f),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -93,7 +93,7 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "3D Boards",
+                        text = stringResource(R.string.boards_3d),
                         color = Color.White.copy(alpha = 0.6f),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -104,14 +104,14 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             BoardSmallButton(
-                                text = "Pyramid",
+                                text = stringResource(R.string.board_pyramid),
                                 color = Color(0xFF1A3A5C),
                                 accent = Color(0xFF00BFFF),
                                 modifier = Modifier.weight(1f)
                             ) { viewModel.startNewLayeredGame(LayeredLayouts.PYRAMID) }
 
                             BoardSmallButton(
-                                text = "Fortress",
+                                text = stringResource(R.string.board_fortress),
                                 color = Color(0xFF2A4A6A),
                                 accent = Color(0xFF44DDFF),
                                 modifier = Modifier.weight(1f)
@@ -119,14 +119,14 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             BoardSmallButton(
-                                text = "Turtle",
+                                text = stringResource(R.string.board_turtle),
                                 color = Color(0xFF1A5C3A),
                                 accent = Color(0xFF44FF88),
                                 modifier = Modifier.weight(1f)
                             ) { viewModel.startNewLayeredGame(LayeredLayouts.TURTLE) }
 
                             BoardSmallButton(
-                                text = "Bridge",
+                                text = stringResource(R.string.board_bridge),
                                 color = Color(0xFF4A3A6A),
                                 accent = Color(0xFFAA66FF),
                                 modifier = Modifier.weight(1f)
@@ -134,13 +134,18 @@ fun BoardsOverlay(viewModel: GameViewModel) {
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             BoardSmallButton(
-                                text = "Dragon",
+                                text = stringResource(R.string.board_dragon),
                                 color = Color(0xFF5C2A1A),
                                 accent = Color(0xFFFF6644),
                                 modifier = Modifier.weight(1f)
                             ) { viewModel.startNewLayeredGame(LayeredLayouts.DRAGON) }
 
-                            Spacer(modifier = Modifier.weight(1f))
+                            BoardSmallButton(
+                                text = stringResource(R.string.board_castle),
+                                color = Color(0xFF3A4A5A),
+                                accent = Color(0xFF88AACC),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.CASTLE) }
                         }
                     }
                 }

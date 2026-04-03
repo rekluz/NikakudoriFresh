@@ -307,7 +307,47 @@ object LayeredLayouts {
         }
     )
 
-    val ALL: List<LayeredLayout> = listOf(PYRAMID, FORTRESS, DRAGON, TURTLE, BRIDGE)
+    /**
+     * CASTLE — 144 tiles, 4 layers.
+     *
+     * Classic castle shape with four corner turrets, central keep, and connecting walls.
+     * Features:
+     * - Corner Turrets: 4 towers at corners (highest points)
+     * - Central Keep: Dense center section
+     * - Connecting Walls: Lower layers bridging turrets to center
+     */
+    val CASTLE = LayeredLayout(
+        id = "CASTLE",
+        displayName = "Castle",
+        positions = buildList {
+            // Layer 0 — base foundation (outer walls)
+            for (row in 0..10 step 2)
+                for (col in 0..22 step 2)
+                    add(TilePosition(col, row, layer = 0))
+
+            // Layer 1 — lower walls (inset rectangle)
+            for (row in 2..8 step 2)
+                for (col in 2..20 step 2)
+                    add(TilePosition(col, row, layer = 1))
+
+            // Layer 2 — central keep (middle section)
+            for (row in 4..6 step 2)
+                for (col in 4..18 step 2)
+                    add(TilePosition(col, row, layer = 2))
+
+            // Layer 3 — corner turrets (4 towers at corners)
+            add(TilePosition(0, 0, layer = 3)); add(TilePosition(2, 0, layer = 3))
+            add(TilePosition(0, 2, layer = 3)); add(TilePosition(2, 2, layer = 3))
+            add(TilePosition(20, 0, layer = 3)); add(TilePosition(22, 0, layer = 3))
+            add(TilePosition(20, 2, layer = 3)); add(TilePosition(22, 2, layer = 3))
+            add(TilePosition(0, 8, layer = 3)); add(TilePosition(2, 8, layer = 3))
+            add(TilePosition(0, 10, layer = 3)); add(TilePosition(2, 10, layer = 3))
+            add(TilePosition(20, 8, layer = 3)); add(TilePosition(22, 8, layer = 3))
+            add(TilePosition(20, 10, layer = 3)); add(TilePosition(22, 10, layer = 3))
+        }
+    )
+
+    val ALL: List<LayeredLayout> = listOf(PYRAMID, FORTRESS, DRAGON, TURTLE, BRIDGE, CASTLE)
 
     fun byId(id: String): LayeredLayout? = ALL.firstOrNull { it.id == id }
 }

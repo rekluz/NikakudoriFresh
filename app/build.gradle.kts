@@ -19,7 +19,7 @@ android {
         applicationId = "com.rekluzgames.nikakudorimahjong"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26040101
+        versionCode = 26040201
         versionName = "5.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -89,10 +89,15 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
 }

@@ -80,6 +80,17 @@
     <string name="time_label">TIME</string>
     <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
 
+    <!-- Boards -->
+    <string name="boards_2d">2D Boards</string>
+    <string name="boards_3d">3D Boards</string>
+
+    <string name="board_pyramid">Pyramid</string>
+    <string name="board_fortress">Fortress</string>
+    <string name="board_turtle">Turtle</string>
+    <string name="board_bridge">Bridge</string>
+    <string name="board_dragon">Dragon</string>
+    <string name="board_castle">Castle</string>
+
     <!-- About Screen -->
     <string name="about_developer">Developed by Rico Luzi / Rekluz Games</string>
     <string name="about_description">A Japanese tile-matching classic. Connect identical pairs with no more than two turns to clear the board!</string>

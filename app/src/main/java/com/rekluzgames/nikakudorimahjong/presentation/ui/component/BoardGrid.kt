@@ -249,7 +249,7 @@ private fun LayeredBoardGrid(
         val gridWidth  = (maxCol + 2) * halfStep  + maxLayer * layerOffsetX
         val gridHeight = (maxRow + 2) * halfStepH + maxLayer * layerOffsetY
 
-        val freeTileIds: Set<Int> = remember(tiles) {
+        val freeTileIds: Set<Int> = remember(tiles, uiState.shufflesRemaining) {
             tiles.filter { tile ->
                 if (tile.isRemoved) return@filter false
 
