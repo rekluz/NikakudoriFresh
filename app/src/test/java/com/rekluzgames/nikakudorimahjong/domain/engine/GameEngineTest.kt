@@ -95,7 +95,7 @@ class GameEngineTest {
             assertNotNull(resultBoard)
             for (r in board.indices) {
                 for (c in board[r].indices) {
-                    if ((r to c) != p1 && (r to c) != p2) {
+                    if (r to c != p1 && r to c != p2) {
                         assertEquals(board[r][c].type, resultBoard!![r][c].type)
                         assertEquals(board[r][c].isRemoved, resultBoard[r][c].isRemoved)
                     }

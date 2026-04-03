@@ -110,11 +110,13 @@ fun BoardGrid(
                 row.forEachIndexed { c, tile ->
                     key(tile.id) {
                         val isHint = uiState.activeHint?.let {
-                            (it.first == r to c) || (it.second == r to c)
+
+                            it.first == r to c || it.second == r to c
                         } ?: false
 
                         val isExploding = uiState.lastMatchedPair?.let {
-                            (it.first == r to c) || (it.second == r to c)
+
+                            it.first == r to c || it.second == r to c
                         } ?: false
 
                         val zPos = (r * 100 + c).toFloat()
