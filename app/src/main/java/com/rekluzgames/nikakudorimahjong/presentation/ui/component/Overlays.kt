@@ -150,7 +150,7 @@ fun StalemateOverlay(viewModel: GameViewModel) {
                     LargeMenuButton(
                         stringResource(R.string.btn_shuffle_format, uiState.shufflesRemaining),
                         Modifier.weight(1f)
-                    ) { if (uiState.shufflesRemaining > 0) viewModel.shuffle() }
+                    ) { if (uiState.shufflesRemaining > 0) { viewModel.shuffle(); viewModel.changeState(GameState.PLAYING) } }
                     LargeMenuButton(
                         stringResource(R.string.btn_retry),
                         Modifier.weight(1f)

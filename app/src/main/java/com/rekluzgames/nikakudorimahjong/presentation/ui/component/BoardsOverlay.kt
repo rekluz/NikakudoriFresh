@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rekluzgames.nikakudorimahjong.domain.model.Difficulty
 import com.rekluzgames.nikakudorimahjong.domain.model.GameState
+import com.rekluzgames.nikakudorimahjong.domain.model.LayeredLayouts
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 import androidx.compose.ui.res.stringResource
 import com.rekluzgames.nikakudorimahjong.R
@@ -29,21 +30,125 @@ fun BoardsOverlay(viewModel: GameViewModel) {
     OverlayContainer {
         OverlayCard {
             OverlayTitle(stringResource(R.string.title_select_board))
-            val chunks = Difficulty.entries.chunked(2)
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                chunks.forEach { rowItems ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        rowItems.forEach { diff ->
-                            BoardRectButton(diff, Modifier.weight(1f)) {
-                                viewModel.startNewGame(diff)
-                            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(32.dp)
+            ) {
+                // Left side: 2D Boards
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "2D Boards",
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // 2x2 grid for 2D boards
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val easyDiff = Difficulty.EASY
+                            BoardSmallButton(
+                                text = stringResource(easyDiff.titleRes),
+                                color = Color(0xFF1A5C2A),
+                                accent = Color(0xFF44BB66),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewGame(easyDiff) }
+
+                            val normalDiff = Difficulty.NORMAL
+                            BoardSmallButton(
+                                text = stringResource(normalDiff.titleRes),
+                                color = Color(0xFF1A3A5C),
+                                accent = Color(0xFF00BFFF),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewGame(normalDiff) }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val hardDiff = Difficulty.HARD
+                            BoardSmallButton(
+                                text = stringResource(hardDiff.titleRes),
+                                color = Color(0xFF5C3A1A),
+                                accent = Color(0xFFFFB300),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewGame(hardDiff) }
+
+                            val extremeDiff = Difficulty.EXTREME
+                            BoardSmallButton(
+                                text = stringResource(extremeDiff.titleRes),
+                                color = Color(0xFF5C1A1A),
+                                accent = Color(0xFFFF4444),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewGame(extremeDiff) }
+                        }
+                    }
+                }
+
+                // Right side: 3D Boards
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "3D Boards",
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // 2x2 + 1 grid for 3D boards (5 total)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            BoardSmallButton(
+                                text = "Pyramid",
+                                color = Color(0xFF1A3A5C),
+                                accent = Color(0xFF00BFFF),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.PYRAMID) }
+
+                            BoardSmallButton(
+                                text = "Fortress",
+                                color = Color(0xFF2A4A6A),
+                                accent = Color(0xFF44DDFF),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.FORTRESS) }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            BoardSmallButton(
+                                text = "Turtle",
+                                color = Color(0xFF1A5C3A),
+                                accent = Color(0xFF44FF88),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.TURTLE) }
+
+                            BoardSmallButton(
+                                text = "Bridge",
+                                color = Color(0xFF4A3A6A),
+                                accent = Color(0xFFAA66FF),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.BRIDGE) }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            BoardSmallButton(
+                                text = "Dragon",
+                                color = Color(0xFF5C2A1A),
+                                accent = Color(0xFFFF6644),
+                                modifier = Modifier.weight(1f)
+                            ) { viewModel.startNewLayeredGame(LayeredLayouts.DRAGON) }
+
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
             Box(modifier = Modifier.width(140.dp)) {
-                MenuPillButton(stringResource(R.string.btn_cancel), color = Color.Gray) {
+                MenuPillButton(stringResource(R.string.btn_done), color = Color.Gray) {
                     viewModel.changeState(GameState.PLAYING)
                 }
             }
@@ -52,40 +157,27 @@ fun BoardsOverlay(viewModel: GameViewModel) {
 }
 
 @Composable
-fun BoardRectButton(difficulty: Difficulty, modifier: Modifier, onClick: () -> Unit) {
-    val buttonColor = when (difficulty) {
-        Difficulty.EASY    -> Color(0xFF1A5C2A)
-        Difficulty.NORMAL  -> Color(0xFF1A3A5C)
-        Difficulty.HARD    -> Color(0xFF5C3A1A)
-        Difficulty.EXTREME -> Color(0xFF5C1A1A)
-    }
-    val accentColor = when (difficulty) {
-        Difficulty.EASY    -> Color(0xFF44BB66)
-        Difficulty.NORMAL  -> Color(0xFF00BFFF)
-        Difficulty.HARD    -> Color(0xFFFFB300)
-        Difficulty.EXTREME -> Color(0xFFFF4444)
-    }
+private fun BoardSmallButton(
+    text: String,
+    color: Color,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
-            .height(80.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(buttonColor)
-            .border(1.dp, accentColor.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+            .height(48.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(color)
+            .border(1.dp, accent.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(difficulty.titleRes),
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = stringResource(R.string.board_size_format, difficulty.rows, difficulty.cols),
-                color = Color.White.copy(alpha = 0.5f),
-                fontSize = 10.sp
-            )
-        }
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

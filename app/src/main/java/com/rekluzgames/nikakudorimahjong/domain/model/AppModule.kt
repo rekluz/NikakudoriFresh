@@ -1,14 +1,9 @@
-/*
- * Copyright (c) 2026 Rekluz Games. All rights reserved.
- */
-
-package com.rekluzgames.nikakudorimahjong.di
+package com.rekluzgames.nikakudorimahjong.domain.model
 
 import android.content.Context
 import com.rekluzgames.nikakudorimahjong.data.preference.PreferenceManager
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.engine.GameEngine
-import com.rekluzgames.nikakudorimahjong.domain.model.QuoteManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

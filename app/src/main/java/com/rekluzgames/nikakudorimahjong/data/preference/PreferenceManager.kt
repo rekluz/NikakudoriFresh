@@ -9,45 +9,68 @@ import com.rekluzgames.nikakudorimahjong.domain.model.Difficulty
 import com.rekluzgames.nikakudorimahjong.domain.model.GameMode
 
 class PreferenceManager(context: Context) {
-    private val prefs = context.getSharedPreferences("NikakudoriPrefs", Context.MODE_PRIVATE)
 
-    fun isSoundEnabled() = prefs.getBoolean("sound", true)
-    fun setSoundEnabled(v: Boolean) = prefs.edit().putBoolean("sound", v).apply()
+    private val prefs = context.applicationContext
+        .getSharedPreferences("NikakudoriPrefs", Context.MODE_PRIVATE)
 
-    fun isVibrationEnabled() = prefs.getBoolean("vibration", true)
-    fun setVibrationEnabled(v: Boolean) = prefs.edit().putBoolean("vibration", v).apply()
+    private object Keys {
+        const val SOUND = "sound"
+        const val VIBRATION = "vibration"
+        const val MUSIC = "music"
+        const val SCALE = "scale"
+        const val FULL_SCREEN = "full_screen"
+        const val LANGUAGE = "language"
+        const val GAME_MODE = "game_mode"
 
-    fun isMusicEnabled() = prefs.getBoolean("music", true)
-    fun setMusicEnabled(v: Boolean) = prefs.edit().putBoolean("music", v).apply()
+        fun scoreKey(difficulty: String) = "scores_$difficulty"
+    }
 
-    fun getScale() = prefs.getFloat("scale", 1.0f)
-    fun setScale(v: Float) = prefs.edit().putFloat("scale", v).apply()
+    fun isSoundEnabled() = prefs.getBoolean(Keys.SOUND, true)
+    fun setSoundEnabled(v: Boolean) =
+        prefs.edit().putBoolean(Keys.SOUND, v).apply()
 
-    fun isFullScreen() = prefs.getBoolean("full_screen", false)
-    fun setFullScreen(v: Boolean) = prefs.edit().putBoolean("full_screen", v).apply()
+    fun isVibrationEnabled() = prefs.getBoolean(Keys.VIBRATION, true)
+    fun setVibrationEnabled(v: Boolean) =
+        prefs.edit().putBoolean(Keys.VIBRATION, v).apply()
 
-    fun getLanguage() = prefs.getString("language", "") ?: ""
-    fun setLanguage(lang: String) = prefs.edit().putString("language", lang).apply()
+    fun isMusicEnabled() = prefs.getBoolean(Keys.MUSIC, true)
+    fun setMusicEnabled(v: Boolean) =
+        prefs.edit().putBoolean(Keys.MUSIC, v).apply()
+
+    fun getScale() = prefs.getFloat(Keys.SCALE, 1.0f)
+    fun setScale(v: Float) =
+        prefs.edit().putFloat(Keys.SCALE, v).apply()
+
+    fun isFullScreen() = prefs.getBoolean(Keys.FULL_SCREEN, false)
+    fun setFullScreen(v: Boolean) =
+        prefs.edit().putBoolean(Keys.FULL_SCREEN, v).apply()
+
+    fun getLanguage() = prefs.getString(Keys.LANGUAGE, "") ?: ""
+    fun setLanguage(lang: String) =
+        prefs.edit().putString(Keys.LANGUAGE, lang).apply()
 
     fun getGameMode(): GameMode {
-        val modeName = prefs.getString("game_mode", GameMode.REGULAR.name)
-        return GameMode.valueOf(modeName ?: GameMode.REGULAR.name)
+        val modeName = prefs.getString(Keys.GAME_MODE, GameMode.REGULAR.name)
+        return runCatching {
+            GameMode.valueOf(modeName ?: "")
+        }.getOrElse {
+            GameMode.REGULAR
+        }
     }
 
     fun setGameMode(mode: GameMode) {
-        prefs.edit().putString("game_mode", mode.name).apply()
+        prefs.edit().putString(Keys.GAME_MODE, mode.name).apply()
     }
 
-    private fun scoreKey(difficulty: String) = "scores_$difficulty"
-
     fun getHighScores(difficulty: String): Set<String> =
-        prefs.getStringSet(scoreKey(difficulty), emptySet()) ?: emptySet()
+        prefs.getStringSet(Keys.scoreKey(difficulty), emptySet())
+            ?.toSet() ?: emptySet() // IMPORTANT: return a copy
 
     fun saveHighScores(difficulty: String, scores: Set<String>) =
-        prefs.edit().putStringSet(scoreKey(difficulty), scores).apply()
+        prefs.edit().putStringSet(Keys.scoreKey(difficulty), scores).apply()
 
     fun clearHighScores(difficulty: String) =
-        prefs.edit().remove(scoreKey(difficulty)).apply()
+        prefs.edit().remove(Keys.scoreKey(difficulty)).apply()
 
     fun getAllHighScores(): Map<String, Set<String>> =
         Difficulty.entries.associate { it.label to getHighScores(it.label) }

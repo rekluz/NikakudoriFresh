@@ -21,17 +21,40 @@ class MusicManager @Inject constructor(
 
     private var mediaPlayer: MediaPlayer? = null
     var isEnabled: Boolean = true
+    private var currentTrack: Int? = null
+
+    private val musicTracks = listOf(
+        R.raw.gamemusic1,
+        R.raw.gamemusic2,
+        R.raw.gamemusic3
+    )
 
     init {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
+    private fun getRandomMusic(): Int {
+        val available = musicTracks.filter { it != currentTrack }
+        return available.random()
+    }
+
+    private fun playTrack(track: Int) {
+        currentTrack = track
+        mediaPlayer?.release()
+
+        val player = MediaPlayer.create(context, track) ?: return
+        player.setOnCompletionListener {
+            if (isEnabled) {
+                playTrack(getRandomMusic())
+            }
+        }
+        player.start()
+        mediaPlayer = player
+    }
+
     fun start() {
         if (mediaPlayer == null) {
-            val player = MediaPlayer.create(context, R.raw.gamemusic) ?: return
-            player.isLooping = true
-            player.start()
-            mediaPlayer = player
+            playTrack(getRandomMusic())
         }
     }
 
@@ -55,5 +78,6 @@ class MusicManager @Inject constructor(
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        currentTrack = null
     }
 }

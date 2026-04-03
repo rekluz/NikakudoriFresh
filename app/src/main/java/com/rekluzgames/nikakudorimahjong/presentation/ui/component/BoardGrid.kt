@@ -252,6 +252,8 @@ private fun LayeredBoardGrid(
         val freeTileIds: Set<Int> = remember(tiles) {
             tiles.filter { tile ->
                 if (tile.isRemoved) return@filter false
+
+                // Check if covered from above - any tile at layer+1 within overlap area
                 val blockedAbove = tiles.any { o ->
                     !o.isRemoved &&
                             o.layer == tile.layer + 1 &&
@@ -259,18 +261,25 @@ private fun LayeredBoardGrid(
                             abs(o.row - tile.row) < 2
                 }
                 if (blockedAbove) return@filter false
+
+                // Check horizontal blocking - need EITHER left OR right side open
+                // Left blocked if there's a tile at same layer with col = col - 2 or col - 1
                 val blockedLeft = tiles.any { o ->
                     !o.isRemoved &&
                             o.layer == tile.layer &&
-                            o.col == tile.col - 2 &&
+                            o.col >= tile.col - 2 &&
+                            o.col < tile.col &&
                             abs(o.row - tile.row) < 2
                 }
+                // Right blocked if there's a tile at same layer with col = col + 1 or col + 2
                 val blockedRight = tiles.any { o ->
                     !o.isRemoved &&
                             o.layer == tile.layer &&
-                            o.col == tile.col + 2 &&
+                            o.col > tile.col &&
+                            o.col <= tile.col + 2 &&
                             abs(o.row - tile.row) < 2
                 }
+
                 !blockedLeft || !blockedRight
             }.map { it.id }.toSet()
         }
