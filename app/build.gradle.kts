@@ -7,8 +7,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
-    id("com.google.dagger.hilt.android") version "2.59"      // ← was 2.56.1
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.google.dagger.hilt)
 }
 
 android {
@@ -19,7 +19,7 @@ android {
         applicationId = "com.rekluzgames.nikakudorimahjong"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26040201
+        versionCode = 26040301
         versionName = "5.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -67,11 +67,11 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(libs.google.android.material)
     // The "Brain" (ViewModel) support
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    implementation(libs.androidx.lifecycle.process)
     // The "Face" (Compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -80,12 +80,12 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("io.coil-kt:coil-gif:2.6.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.59")        // ← was 2.56.1
-    ksp("com.google.dagger:hilt-android-compiler:2.59")          // ← was 2.56.1
+    implementation(libs.google.dagger.hilt)
+    ksp(libs.google.dagger.hilt.compiler)
 
     // Testing
     testImplementation(libs.junit)

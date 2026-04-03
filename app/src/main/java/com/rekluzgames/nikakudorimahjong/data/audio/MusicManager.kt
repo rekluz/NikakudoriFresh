@@ -16,11 +16,13 @@ import javax.inject.Singleton
 
 @Singleton
 class MusicManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val repository: com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 ) : DefaultLifecycleObserver {
 
     private var mediaPlayer: MediaPlayer? = null
-    var isEnabled: Boolean = true
+    var isEnabled: Boolean = repository.isMusicEnabled()
+    var isInitialized: Boolean = false
     private var currentTrack: Int? = null
 
     private val musicTracks = listOf(
@@ -53,8 +55,9 @@ class MusicManager @Inject constructor(
     }
 
     fun start() {
-        if (mediaPlayer == null) {
+        if (isEnabled && mediaPlayer == null) {
             playTrack(getRandomMusic())
+            isInitialized = true
         }
     }
 
@@ -79,5 +82,6 @@ class MusicManager @Inject constructor(
         mediaPlayer?.release()
         mediaPlayer = null
         currentTrack = null
+        isInitialized = false
     }
 }

@@ -1,6 +1,7 @@
 package com.rekluzgames.nikakudorimahjong.domain.model
 
 import android.content.Context
+import com.rekluzgames.nikakudorimahjong.data.audio.MusicManager
 import com.rekluzgames.nikakudorimahjong.data.preference.PreferenceManager
 import com.rekluzgames.nikakudorimahjong.data.repository.GameRepository
 import com.rekluzgames.nikakudorimahjong.domain.engine.GameEngine
@@ -32,4 +33,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideQuoteManager(): QuoteManager = QuoteManager()
+
+    @Provides
+    @Singleton
+    fun provideMusicManager(
+        @ApplicationContext context: Context,
+        repository: GameRepository
+    ): MusicManager = MusicManager(context, repository)
 }
