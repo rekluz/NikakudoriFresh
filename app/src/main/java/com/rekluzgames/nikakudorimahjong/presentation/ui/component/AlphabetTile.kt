@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
+import android.annotation.SuppressLint
+
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 @Composable
 fun AlphabetTile(char: Char, isVisible: Boolean, onClick: () -> Unit) {
     val context = LocalContext.current

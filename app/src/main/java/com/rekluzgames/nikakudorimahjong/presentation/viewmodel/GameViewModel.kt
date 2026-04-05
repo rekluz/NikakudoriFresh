@@ -139,11 +139,10 @@ class GameViewModel @Inject constructor(
 
     fun selectScoreTab(tab: String) { _uiState.update { it.copy(selectedScoreTab = tab) } }
     fun clearLastSavedScore() { _uiState.update { it.copy(lastSavedScore = null) } }
-    fun updatePlayerName(name: String) {
-        val sanitized = name.trim().take(3)
-        _uiState.update { it.copy(playerName = sanitized) }
-
+    fun updatePlayerName(input: String) {
+        _uiState.update { it.copy(playerName = input.trim().take(3)) }
     }
+
     fun clearScores(diffLabel: String) {
         scoreManager.clearScores(diffLabel)
         _uiState.update { it.copy(highScores = scoreManager.getAllHighScores()) }
@@ -151,7 +150,6 @@ class GameViewModel @Inject constructor(
 
     fun saveScoreAndShowBoard() {
         val state = _uiState.value
-        val name = state.playerName.take(3).ifBlank { "???" }
         val newScore = scoreManager.processWin(
             playerName = state.playerName,
             timeSeconds = gameTimer.timeSeconds.value,
@@ -255,6 +253,7 @@ class GameViewModel @Inject constructor(
     private fun handleWin() {
         cancelAllGameLogicJobs()
         gameTimer.pause()
+        @Suppress("SpellCheckingInspection")
         soundManager.play("tile_tada")
         hapticManager.gameWin()
 
@@ -401,32 +400,29 @@ class GameViewModel @Inject constructor(
         resetInactivityTimer()
 
         val state = _uiState.value
-        val tiles = state.layeredTiles
-        val tapped = tiles.firstOrNull { it.id == id && !it.isRemoved } ?: return
+        val tapped = state.layeredTiles.firstOrNull { it.id == id && !it.isRemoved } ?: return
 
-        if (!layeredEngine.isFree(tapped, tiles)) {
+        if (!layeredEngine.isFree(tapped, state.layeredTiles)) {
             hapticManager.tileError()
             soundManager.play("tile_error")
             return
         }
 
-        val currentSelection = state.selectedLayeredTileId
-
-        when {
-            currentSelection == id -> {
+        when (state.selectedLayeredTileId) {
+            id -> {
                 _uiState.update { it.copy(selectedLayeredTileId = null) }
             }
-            currentSelection == null -> {
+            null -> {
                 hapticManager.tileSelect()
                 _uiState.update { it.copy(selectedLayeredTileId = id) }
             }
             else -> {
-                val newTiles = layeredEngine.attemptMatch(currentSelection, id, tiles)
+                val newTiles = layeredEngine.attemptMatch(state.selectedLayeredTileId, id, state.layeredTiles)
                 if (newTiles != null) {
                     hapticManager.tileMatch()
                     soundManager.play("tile_match")
 
-                    val snapshot = tiles
+                    val snapshot = state.layeredTiles
                     _uiState.update {
                         it.copy(
                             layeredTiles = newTiles,
@@ -567,7 +563,7 @@ class GameViewModel @Inject constructor(
 
     fun shuffle() {
         Log.d("GameViewModel", "shuffle() called, isLayeredMode=${_uiState.value.isLayeredMode}, shufflesRemaining=${_uiState.value.shufflesRemaining}")
-        
+
         if (_uiState.value.isLayeredMode) {
             shuffleLayered()
             return
@@ -605,7 +601,7 @@ class GameViewModel @Inject constructor(
 
     private fun shuffleLayered() {
         Log.d("GameViewModel", "shuffleLayered() called, activeTiles count=${_uiState.value.layeredTiles.count { !it.isRemoved }}")
-        
+
         val state = _uiState.value
         if (state.shufflesRemaining <= 0) return
 

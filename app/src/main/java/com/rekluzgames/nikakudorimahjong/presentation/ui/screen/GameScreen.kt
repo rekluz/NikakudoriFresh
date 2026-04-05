@@ -29,6 +29,9 @@ import com.rekluzgames.nikakudorimahjong.presentation.ui.component.*
 import com.rekluzgames.nikakudorimahjong.presentation.ui.theme.MidnightBlue
 import com.rekluzgames.nikakudorimahjong.presentation.viewmodel.GameViewModel
 
+import android.annotation.SuppressLint
+
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,

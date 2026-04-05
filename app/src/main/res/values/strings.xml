@@ -11,13 +11,10 @@
     <string name="setting_music">Music</string>
     <!-- Game State / UI -->
     <string name="win_message">VICTORY!</string>
-    <string name="game_paused">PAUSED</string>
-    <string name="loading_board">GENERATING SOLVABLE BOARD...</string>
     <string name="stalemate_title">NO MORE MOVES!</string>
     <string name="stalemate_subtitle">Choose an option:</string>
 
     <!-- Buttons -->
-    <string name="btn_play_again">Play Again</string>
     <string name="btn_done">DONE</string>
     <string name="btn_resume">RESUME</string>
     <string name="btn_menu">MENU</string>
@@ -28,7 +25,7 @@
     <string name="btn_about">ABOUT</string>
     <string name="btn_exit">EXIT</string>
     <string name="btn_undo">UNDO</string>
-    <string name="btn_cancel">CANCEL</string>
+    <string name="btn_cancel">Cancel</string>
     <string name="btn_shuffle_format">SHUFFLE (%1$d)</string>
     <string name="btn_language">LANGUAGE</string>
     <string name="btn_settings">SETTINGS</string>
@@ -62,10 +59,8 @@
     <string name="status_view">VIEW</string>
 
     <string name="title_select_board">SELECT BOARD</string>
-    <string name="board_size_format">%1$d × %2$d</string>
 
     <string name="about_github_link">View project on GitHub</string>
-    <string name="about_hello_world">Hello World!</string>
     <string name="about_created_by">Created by</string>
     <string name="developer_name">Rico Luzi</string>
     <string name="about_thank_you">THANK YOU FOR PLAYING</string>
@@ -76,9 +71,6 @@
     <string name="score_no_scores">No scores yet</string>
 
     <!-- Scoring -->
-    <string name="current_score_label">Score: %1$d</string>
-    <string name="time_label">TIME</string>
-    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
 
     <!-- Boards -->
     <string name="boards_2d">2D Boards</string>
@@ -92,11 +84,8 @@
     <string name="board_castle">Castle</string>
 
     <!-- About Screen -->
-    <string name="about_developer">Developed by Rico Luzi / Rekluz Games</string>
     <string name="about_description">A Japanese tile-matching classic. Connect identical pairs with no more than two turns to clear the board!</string>
     <string name="version_label">Version %1$s</string>
 
     <!-- Social / Project -->
-    <string name="copyright_notice">© 2026 Rekluz Games. All Rights Reserved.</string>
-    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
 </resources>

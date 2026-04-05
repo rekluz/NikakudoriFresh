@@ -24,6 +24,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.rekluzgames.nikakudorimahjong.domain.model.Tile
 
+import androidx.compose.ui.unit.IntOffset
+import android.annotation.SuppressLint
+
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 @Composable
 fun TileView(
     tile: Tile,
@@ -87,7 +91,7 @@ fun TileView(
         Box(
             modifier = Modifier
                 .size(width.dp, height.dp)
-                .offset(animatedX.dp, animatedY.dp)
+                .offset { IntOffset(animatedX.dp.roundToPx(), animatedY.dp.roundToPx()) }
                 .clip(RectangleShape)
                 .graphicsLayer {
                     scaleX = animatedScale

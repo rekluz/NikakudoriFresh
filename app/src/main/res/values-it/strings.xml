@@ -11,13 +11,10 @@
 
     <!-- Game State / UI -->
     <string name="win_message">VITTORIA!</string>
-    <string name="game_paused">IN PAUSA</string>
-    <string name="loading_board">GENERAZIONE SCHEDA RISOLVIBILE...</string>
     <string name="stalemate_title">NESSUNA MOSSA DISPONIBILE!</string>
     <string name="stalemate_subtitle">Scegli un\'opzione:</string>
 
     <!-- Buttons -->
-    <string name="btn_play_again">Gioca Ancora</string>
     <string name="btn_done">FATTO</string>
     <string name="btn_resume">RIPRENDI</string>
     <string name="btn_menu">MENU</string>
@@ -61,10 +58,8 @@
     <string name="status_view">VEDI</string>
 
     <string name="title_select_board">SELEZIONA SCHEDA</string>
-    <string name="board_size_format">%1$d × %2$d</string>
 
     <string name="about_github_link">Vedi progetto su GitHub</string>
-    <string name="about_hello_world">Ciao Mondo!</string>
     <string name="about_created_by">Creato da</string>
     <string name="developer_name">Rico Luzi</string>
     <string name="about_thank_you">GRAZIE PER AVER GIOCATO</string>
@@ -75,16 +70,20 @@
     <string name="score_no_scores">Ancora nessun punteggio</string>
 
     <!-- Scoring -->
-    <string name="current_score_label">Punteggio: %1$d</string>
-    <string name="time_label">TEMPO</string>
-    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
 
     <!-- About Screen -->
-    <string name="about_developer">Sviluppato da Rico Luzi / Rekluz Games</string>
     <string name="about_description">Un classico abbinamento di tessere giapponese. Connetti coppie identiche con non più di due svolte per pulire il tavolo!</string>
     <string name="version_label">Versione %1$s</string>
 
     <!-- Social / Project -->
-    <string name="copyright_notice">© 2026 Rekluz Games. Tutti i diritti riservati.</string>
-    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+    <string name="setting_music">Musica</string>
+    <string name="setting_board">Tavolo</string>
+    <string name="boards_2d">Tavoli 2D</string>
+    <string name="boards_3d">Tavoli 3D</string>
+    <string name="board_pyramid">Piramide</string>
+    <string name="board_fortress">Fortezza</string>
+    <string name="board_turtle">Tartaruga</string>
+    <string name="board_bridge">Ponte</string>
+    <string name="board_dragon">Drago</string>
+    <string name="board_castle">Castello</string>
 </resources>

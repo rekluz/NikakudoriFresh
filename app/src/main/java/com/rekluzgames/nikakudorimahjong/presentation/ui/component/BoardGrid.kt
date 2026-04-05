@@ -140,7 +140,7 @@ fun BoardGrid(
 
             val pathPoints = uiState.lastMatchPath
             if (pathPoints != null && pathPoints.size >= 2) {
-                var lineProgress by remember { mutableStateOf(0f) }
+                var lineProgress by remember { mutableFloatStateOf(0f) }
                 LaunchedEffect(pathPoints) {
                     lineProgress = 0f
                     animate(

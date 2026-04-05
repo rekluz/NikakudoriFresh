@@ -11,13 +11,10 @@
 
     <!-- Game State / UI -->
     <string name="win_message">PANALO!</string>
-    <string name="game_paused">NAKA-PAUSE</string>
-    <string name="loading_board">GUMAGAWA NG MALULUTAS NA BOARD...</string>
     <string name="stalemate_title">WALA NANG GALAW!</string>
     <string name="stalemate_subtitle">PUMILI NG OPSYON:</string>
 
     <!-- Buttons -->
-    <string name="btn_play_again">MAGLARO MULI</string>
     <string name="btn_done">TAPOS</string>
     <string name="btn_resume">IPAGPATULOY</string>
     <string name="btn_menu">MENU</string>
@@ -61,10 +58,8 @@
     <string name="status_view">TINGNAN</string>
 
     <string name="title_select_board">PUMILI NG BOARD</string>
-    <string name="board_size_format">%1$d × %2$d</string>
 
     <string name="about_github_link">TINGNAN SA GITHUB</string>
-    <string name="about_hello_world">HELLO WORLD!</string>
     <string name="about_created_by">GINAWA NI</string>
     <string name="developer_name">Rico Luzi</string>
     <string name="about_thank_you">SALAMAT SA PAGLALARO</string>
@@ -75,16 +70,20 @@
     <string name="score_no_scores">WALA PANG SCORE</string>
 
     <!-- Scoring -->
-    <string name="current_score_label">SCORE: %1$d</string>
-    <string name="time_label">ORAS</string>
-    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
 
     <!-- About Screen -->
-    <string name="about_developer">GINAWA NI RICO LUZI / REKLUZ GAMES</string>
     <string name="about_description">Isang klasikong Japanese tile-matching game. Ikonekta ang magkaparehong pares gamit ang hindi hihigit sa dalawang liko upang ma-clear ang board!</string>
     <string name="version_label">BERSYON %1$s</string>
 
     <!-- Social / Project -->
-    <string name="copyright_notice">© 2026 REKLUZ GAMES. LAHAT NG KARAPATAN AY NAKALAAN.</string>
-    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+    <string name="setting_music">Musika</string>
+    <string name="setting_board">Board</string>
+    <string name="boards_2d">Mga 2D Board</string>
+    <string name="boards_3d">Mga 3D Board</string>
+    <string name="board_pyramid">Piramide</string>
+    <string name="board_fortress">Kuta</string>
+    <string name="board_turtle">Pagong</string>
+    <string name="board_bridge">Tulay</string>
+    <string name="board_dragon">Dragon</string>
+    <string name="board_castle">Kastilyo</string>
 </resources>

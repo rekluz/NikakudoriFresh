@@ -99,8 +99,8 @@ private fun spawnBurst(pos: Offset, count: Int = 18): List<PetalParticle> {
 @Composable
 fun ParticleOverlay(
     triggerVictoryStorm: Boolean,
-    selectionPositions: List<Offset> = emptyList(),
     modifier: Modifier = Modifier,
+    selectionPositions: List<Offset> = emptyList(),
     isScoreEntryActive: Boolean = false
 ) {
     var particles by remember { mutableStateOf<List<PetalParticle>>(emptyList()) }

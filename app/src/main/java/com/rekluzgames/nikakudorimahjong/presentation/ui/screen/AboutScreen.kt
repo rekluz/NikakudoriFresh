@@ -34,6 +34,9 @@ import com.rekluzgames.nikakudorimahjong.R
 import com.rekluzgames.nikakudorimahjong.BuildConfig
 import kotlinx.coroutines.delay
 
+import android.annotation.SuppressLint
+
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 @Composable
 fun AboutScreen(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()

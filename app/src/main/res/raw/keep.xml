@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/bg_*,@drawable/letter_*,@drawable/tile_*,@raw/*"
+    tools:discard="@layout/dialog_scoreboard,@anim/fade_in,@drawable/ic_stat_name,@drawable/my_photo,@color/ic_launcher_background,@drawable/ic_launcher_foreground,@mipmap/ic_launcher_background" />

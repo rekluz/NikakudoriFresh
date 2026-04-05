@@ -6,19 +6,5 @@
   -->
 
 <resources>
-    <!-- Brand Colors -->
-    <color name="dark_blue">#051C5C</color>
-    <color name="mahjong_green">#1B5E20</color>
-
-    <!-- Standard Colors -->
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="transparent">#00000000</color>
-
-    <!-- Material Default Colors (Optional, but good for stability) -->
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Unused Colors removed -->
 </resources>

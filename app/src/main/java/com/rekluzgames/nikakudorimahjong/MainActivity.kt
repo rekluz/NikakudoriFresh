@@ -23,6 +23,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import javax.inject.Inject
 
+import android.annotation.SuppressLint
+
+@SuppressLint("AppBundleLocaleChanges")
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 

@@ -10,6 +10,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import android.annotation.SuppressLint
+
+@SuppressLint("DiscouragedApi")
 @Singleton
 class SoundManager @Inject constructor(
     // Added @param: to resolve the compiler warning

@@ -11,13 +11,10 @@
 
     <!-- Game State / UI -->
     <string name="win_message">VICTOIRE !</string>
-    <string name="game_paused">EN PAUSE</string>
-    <string name="loading_board">GÉNÉRATION D\'UN PLATEAU SOLUBLE...</string>
     <string name="stalemate_title">PLUS DE MOUVEMENTS !</string>
     <string name="stalemate_subtitle">Choisissez une option :</string>
 
     <!-- Buttons -->
-    <string name="btn_play_again">Rejouer</string>
     <string name="btn_done">TERMINÉ</string>
     <string name="btn_resume">REPRENDRE</string>
     <string name="btn_menu">MENU</string>
@@ -61,10 +58,8 @@
     <string name="status_view">VOIR</string>
 
     <string name="title_select_board">SÉLECTIONNER PLATEAU</string>
-    <string name="board_size_format">%1$d × %2$d</string>
 
     <string name="about_github_link">Voir le projet sur GitHub</string>
-    <string name="about_hello_world">Bonjour le monde !</string>
     <string name="about_created_by">Créé par</string>
     <string name="developer_name">Rico Luzi</string>
     <string name="about_thank_you">MERCI D\'AVOIR JOUÉ</string>
@@ -75,16 +70,20 @@
     <string name="score_no_scores">Aucun score pour le moment</string>
 
     <!-- Scoring -->
-    <string name="current_score_label">Score : %1$d</string>
-    <string name="time_label">TEMPS</string>
-    <string name="placeholder_rankings">1. --- \n2. --- \n3. ---</string>
 
     <!-- About Screen -->
-    <string name="about_developer">Développé par Rico Luzi / Rekluz Games</string>
     <string name="about_description">Un classique japonais d\'association de tuiles. Connectez des paires identiques avec pas plus de deux virages pour vider le plateau !</string>
     <string name="version_label">Version %1$s</string>
 
     <!-- Social / Project -->
-    <string name="copyright_notice">© 2026 Rekluz Games. Tous droits réservés.</string>
-    <string name="github_url">https://github.com/rekluz/Nikakudori-Fresh</string>
+    <string name="setting_music">Musique</string>
+    <string name="setting_board">Plateau</string>
+    <string name="boards_2d">Plateaux 2D</string>
+    <string name="boards_3d">Plateaux 3D</string>
+    <string name="board_pyramid">Pyramide</string>
+    <string name="board_fortress">Forteresse</string>
+    <string name="board_turtle">Tortue</string>
+    <string name="board_bridge">Pont</string>
+    <string name="board_dragon">Dragon</string>
+    <string name="board_castle">Château</string>
 </resources>
